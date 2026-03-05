@@ -1,0 +1,177 @@
+{
+  "projectType": "general",
+  "projectName": "Mango",
+  "projectDescription": "Practical and powerful Wayland compositor with smooth animations, flexible layouts, and rich window management features",
+  "theme": "aspen",
+  "primaryColor": "#fbb120",
+  "lightColor": "#d4e04c",
+  "darkColor": null,
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "quickstart"
+            ]
+          },
+          {
+            "group": "Installation",
+            "pages": [
+              "installation/arch-linux",
+              "installation/gentoo-linux",
+              "installation/fedora-linux",
+              "installation/guix-system",
+              "installation/nixos",
+              "installation/from-source"
+            ]
+          },
+          {
+            "group": "Core Concepts",
+            "pages": [
+              "concepts/tags",
+              "concepts/layouts",
+              "concepts/window-states",
+              "concepts/animations"
+            ]
+          },
+          {
+            "group": "Configuration",
+            "pages": [
+              "configuration/overview",
+              "configuration/keybindings",
+              "configuration/appearance",
+              "configuration/window-effects",
+              "configuration/animations",
+              "configuration/input-devices",
+              "configuration/rules"
+            ]
+          },
+          {
+            "group": "Features",
+            "pages": [
+              "features/layouts",
+              "features/scratchpad",
+              "features/overview-mode",
+              "features/ipc",
+              "features/window-effects",
+              "features/xwayland"
+            ]
+          },
+          {
+            "group": "Advanced",
+            "pages": [
+              "advanced/mmsg-ipc-tool",
+              "advanced/custom-scripts",
+              "advanced/nixos-integration",
+              "advanced/troubleshooting"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Reference",
+        "groups": [
+          {
+            "group": "Command Reference",
+            "pages": [
+              "reference/keybindings",
+              "reference/window-commands",
+              "reference/layout-commands",
+              "reference/tag-commands"
+            ]
+          },
+          {
+            "group": "Configuration Options",
+            "pages": [
+              "reference/config-options",
+              "reference/animation-options",
+              "reference/effect-options"
+            ]
+          },
+          {
+            "group": "IPC Protocol",
+            "pages": [
+              "reference/ipc-overview",
+              "reference/ipc-commands"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Community",
+        "groups": [
+          {
+            "group": "Resources",
+            "pages": [
+              "community/contributing",
+              "community/packaging",
+              "community/recommended-tools",
+              "community/support"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Lightweight and fast build",
+    "Tag-based workspaces with per-tag layouts",
+    "Smooth customizable animations",
+    "Multiple window layouts (tile, scroller, monocle, grid, etc.)",
+    "Rich window states (swallow, minimize, maximize, global, overlay)",
+    "Window effects (blur, shadow, corner radius, opacity)",
+    "Excellent XWayland support",
+    "Sway-like scratchpad with named scratchpads",
+    "Hycov-like overview mode",
+    "IPC support via mmsg tool",
+    "Hot-reload configuration",
+    "Zero flickering rendering"
+  ],
+  "publicApiSurface": [
+    "killclient",
+    "quit",
+    "reload_config",
+    "spawn",
+    "focusdir",
+    "focusstack",
+    "focusmon",
+    "togglefloating",
+    "togglefullscreen",
+    "togglemaximizescreen",
+    "toggleglobal",
+    "toggleoverview",
+    "togglegaps",
+    "toggle_scratchpad",
+    "minimized",
+    "restore_minimized",
+    "toggleoverlay",
+    "view",
+    "tag",
+    "tagsilent",
+    "viewtoleft",
+    "viewtoright",
+    "tagtoleft",
+    "tagtoright",
+    "tagmon",
+    "setlayout",
+    "switch_layout",
+    "setmfact",
+    "incnmaster",
+    "incgaps",
+    "moveresize",
+    "movewin",
+    "resizewin",
+    "exchange_client",
+    "set_proportion",
+    "switch_proportion_preset",
+    "bind",
+    "mousebind",
+    "axisbind",
+    "tagrule",
+    "layerrule"
+  ]
+}
