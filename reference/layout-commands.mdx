@@ -1,0 +1,363 @@
+---
+title: Layout Commands
+description: Layout-related commands for Mango Wayland Compositor
+---
+
+## Available Layouts
+
+Mango supports multiple tiling layouts:
+
+- **tile** - Master-stack layout (traditional dwm style)
+- **scroller** - Horizontal scrolling layout
+- **vertical_scroller** - Vertical scrolling layout
+- **grid** - Grid layout
+- **deck** - Deck layout (one window visible)
+- **monocle** - Monocle layout (fullscreen tiling)
+- **center_tile** - Centered master layout
+- **vertical_tile** - Vertical master-stack layout
+
+Layouts are configured per-tag using `tagrule` in config.conf:
+
+```conf
+tagrule=id:1,layout_name:tile
+tagrule=id:2,layout_name:scroller
+```
+
+## Layout Selection Commands
+
+### setlayout
+
+Set the layout to a specific type.
+
+<ParamField path="arg->v" type="string" required>
+  Layout name (tile, scroller, grid, deck, monocle, center_tile, vertical_tile, vertical_scroller)
+</ParamField>
+
+**Examples:**
+```conf
+bind=SUPER,t,setlayout,tile
+bind=SUPER,s,setlayout,scroller
+bind=SUPER,g,setlayout,grid
+bind=SUPER,d,setlayout,deck
+bind=SUPER,m,setlayout,monocle
+```
+
+**Behavior:**
+- Switches current tag to specified layout
+- Clears fullscreen and maximized states
+- Triggers rearrangement of windows
+- Layout setting is per-tag (workspace)
+
+---
+
+### switch_layout
+
+Cycle through configured layouts.
+
+**Example:**
+```conf
+bind=SUPER,n,switch_layout
+```
+
+**Behavior:**
+- Cycles to next layout in sequence
+- If `circle_layout` is configured in config, cycles through that list only
+- Otherwise cycles through all available layouts
+- Clears fullscreen and maximized states
+- Useful for quickly testing different layouts
+
+---
+
+## Master-Stack Layout Commands
+
+These commands apply to layouts with a master/stack structure (tile, vertical_tile, center_tile).
+
+### setmfact
+
+Set master area factor (width/height ratio).
+
+<ParamField path="arg->f" type="float" required>
+  Factor value (0.1 to 0.9). If < 1.0, adds to current value. If >= 1.0, subtracts 1.0 to get absolute value.
+</ParamField>
+
+**Examples:**
+```conf
+# Increase master area by 5%
+bind=SUPER,l,setmfact,+0.05
+
+# Decrease master area by 5%
+bind=SUPER,h,setmfact,-0.05
+
+# Set to absolute 60%
+bind=SUPER,equal,setmfact,1.6
+```
+
+**Behavior:**
+- Adjusts ratio between master and stack areas
+- Valid range: 0.1 (10%) to 0.9 (90%)
+- Default is configured by `default_mfact` (typically 0.55)
+- Setting is per-tag
+
+---
+
+### incnmaster
+
+Increase/decrease number of windows in master area.
+
+<ParamField path="arg->i" type="int" required>
+  Number to add (positive) or subtract (negative)
+</ParamField>
+
+**Examples:**
+```conf
+# Add one window to master
+bind=SUPER,i,incnmaster,+1
+
+# Remove one window from master
+bind=SUPER,d,incnmaster,-1
+```
+
+**Behavior:**
+- Changes how many windows appear in master area
+- Remaining windows go to stack area
+- Minimum is 0 (all windows in stack)
+- Default is configured by `default_nmaster` (typically 1)
+- Setting is per-tag
+
+---
+
+## Scroller Layout Commands
+
+These commands are specific to scroller and vertical_scroller layouts.
+
+### set_proportion
+
+Set proportion (width/height) of focused window in scroller layout.
+
+<ParamField path="arg->f" type="float" required>
+  Proportion value (0.0 to 1.0)
+</ParamField>
+
+**Example:**
+```conf
+bind=ALT,e,set_proportion,1.0
+bind=ALT,w,set_proportion,0.8
+bind=ALT,q,set_proportion,0.5
+```
+
+**Behavior:**
+- Sets width (horizontal scroller) or height (vertical scroller) as proportion of available space
+- Only works in scroller/vertical_scroller layouts
+- Does not work in overview mode
+- Ignored if only one window and `scroller_ignore_proportion_single=1`
+- Window remembers its proportion setting
+
+**Configuration:**
+```conf
+scroller_default_proportion=0.8
+scroller_default_proportion_single=1.0
+```
+
+---
+
+### switch_proportion_preset
+
+Cycle through configured proportion presets.
+
+**Example:**
+```conf
+bind=ALT,x,switch_proportion_preset,
+```
+
+**Behavior:**
+- Cycles through presets defined in `scroller_proportion_preset`
+- Only works in scroller/vertical_scroller layouts
+- Does not work in overview mode
+- Convenient for quickly resizing windows
+
+**Configuration:**
+```conf
+scroller_proportion_preset=0.5,0.8,1.0
+```
+
+---
+
+### scroller_stack
+
+Stack/unstack windows in scroller layout.
+
+<ParamField path="arg->i" type="direction" required>
+  Direction: `LEFT`, `RIGHT`, `UP`, or `DOWN`
+</ParamField>
+
+**Examples:**
+```conf
+bind=SUPER+CTRL,Left,scroller_stack,left
+bind=SUPER+CTRL,Right,scroller_stack,right
+bind=SUPER+CTRL,Up,scroller_stack,up
+bind=SUPER+CTRL,Down,scroller_stack,down
+```
+
+**Behavior:**
+- Groups multiple windows into a vertical/horizontal stack
+- In horizontal scroller: UP/DOWN moves window into/out of stack
+- In vertical scroller: LEFT/RIGHT moves window into/out of stack
+- Stacked windows share the same column/row
+- Can cycle through stacked windows
+- Exits fullscreen/maximized state
+- Only works with windows on single tag (not global/unglobal)
+
+---
+
+## Gap Commands
+
+Control spacing between windows and screen edges.
+
+### incgaps
+
+Increase or decrease all gaps uniformly.
+
+<ParamField path="arg->i" type="int" required>
+  Pixels to add (positive) or subtract (negative)
+</ParamField>
+
+**Examples:**
+```conf
+bind=ALT+SHIFT,X,incgaps,1
+bind=ALT+SHIFT,Z,incgaps,-1
+```
+
+**Behavior:**
+- Adjusts inner and outer gaps by same amount
+- Can make gaps negative (windows overlap)
+- Setting is per-monitor
+
+---
+
+### incigaps
+
+Increase or decrease inner gaps (between windows).
+
+<ParamField path="arg->i" type="int" required>
+  Pixels to add (positive) or subtract (negative)
+</ParamField>
+
+**Example:**
+```conf
+bind=SUPER,minus,incigaps,-1
+bind=SUPER,equal,incigaps,1
+```
+
+**Behavior:**
+- Only affects gaps between windows
+- Does not affect outer gaps (screen edges)
+
+---
+
+### incihgaps
+
+Increase or decrease inner horizontal gaps.
+
+<ParamField path="arg->i" type="int" required>
+  Pixels to add (positive) or subtract (negative)
+</ParamField>
+
+---
+
+### incivgaps
+
+Increase or decrease inner vertical gaps.
+
+<ParamField path="arg->i" type="int" required>
+  Pixels to add (positive) or subtract (negative)
+</ParamField>
+
+---
+
+### incogaps
+
+Increase or decrease outer gaps (screen edges).
+
+<ParamField path="arg->i" type="int" required>
+  Pixels to add (positive) or subtract (negative)
+</ParamField>
+
+---
+
+### incohgaps
+
+Increase or decrease outer horizontal gaps.
+
+<ParamField path="arg->i" type="int" required>
+  Pixels to add (positive) or subtract (negative)
+</ParamField>
+
+---
+
+### incovgaps
+
+Increase or decrease outer vertical gaps.
+
+<ParamField path="arg->i" type="int" required>
+  Pixels to add (positive) or subtract (negative)
+</ParamField>
+
+---
+
+### togglegaps
+
+Toggle gaps on/off globally.
+
+**Example:**
+```conf
+bind=ALT+SHIFT,R,togglegaps
+```
+
+**Behavior:**
+- Toggles `enablegaps` setting
+- When off, all gaps are removed
+- When on, gaps return to configured values
+- Affects all monitors and tags
+
+---
+
+### defaultgaps
+
+Reset gaps to default values from config.
+
+**Example:**
+```conf
+bind=SUPER+SHIFT,g,defaultgaps,
+```
+
+**Behavior:**
+- Resets to values from config.conf:
+  - `gappih` - inner horizontal
+  - `gappiv` - inner vertical
+  - `gappoh` - outer horizontal
+  - `gappov` - outer vertical
+
+---
+
+## Gap Configuration
+
+Gaps are configured in config.conf:
+
+```conf
+# Inner gaps (between windows)
+gappih=5    # horizontal
+gappiv=5    # vertical
+
+# Outer gaps (screen edges)
+gappoh=10   # horizontal
+gappov=10   # vertical
+
+# Smart gaps (hide when single window)
+smartgaps=0
+```
+
+## See Also
+
+- [Keybinding Reference](/reference/keybindings)
+- [Window Commands](/reference/window-commands)
+- [Tag Commands](/reference/tag-commands)

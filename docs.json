@@ -1,122 +1,138 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "theme": "mint",
-  "name": "Mint Starter Kit",
+  "name": "Mango",
+  "theme": "aspen",
   "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
+    "primary": "#fbb120",
+    "light": "#d4e04c",
+    "dark": "#fbb120"
   },
-  "favicon": "/favicon.svg",
+  "favicon": "https://media.brand.dev/0534c3d0-5662-4a6f-b0e1-11ab8046f7c7.png",
+  "logo": {
+    "light": "https://media.brand.dev/0534c3d0-5662-4a6f-b0e1-11ab8046f7c7.png",
+    "dark": "https://media.brand.dev/0534c3d0-5662-4a6f-b0e1-11ab8046f7c7.png"
+  },
+  "navbar": {
+    "primary": {
+      "type": "github",
+      "href": "https://github.com/mangowm/mango"
+    }
+  },
+  "footer": {
+    "socials": {
+      "github": "https://github.com/mangowm/mango",
+      "discord": "https://discord.gg/CPjbDxesh5"
+    }
+  },
   "navigation": {
     "tabs": [
       {
-        "tab": "Guides",
+        "tab": "Documentation",
         "groups": [
           {
-            "group": "Getting started",
+            "group": "Get Started",
             "pages": [
-              "index",
-              "quickstart",
-              "development"
+              "introduction",
+              "quickstart"
             ]
           },
           {
-            "group": "Customization",
+            "group": "Installation",
             "pages": [
-              "essentials/settings",
-              "essentials/navigation"
+              "installation/arch-linux",
+              "installation/gentoo-linux",
+              "installation/fedora-linux",
+              "installation/guix-system",
+              "installation/nixos",
+              "installation/from-source"
             ]
           },
           {
-            "group": "Writing content",
+            "group": "Core Concepts",
             "pages": [
-              "essentials/markdown",
-              "essentials/code",
-              "essentials/images",
-              "essentials/reusable-snippets"
+              "concepts/tags",
+              "concepts/layouts",
+              "concepts/window-states",
+              "concepts/animations"
             ]
           },
           {
-            "group": "AI tools",
+            "group": "Configuration",
             "pages": [
-              "ai-tools/cursor",
-              "ai-tools/claude-code",
-              "ai-tools/windsurf"
+              "configuration/overview",
+              "configuration/keybindings",
+              "configuration/appearance",
+              "configuration/window-effects",
+              "configuration/animations",
+              "configuration/input-devices",
+              "configuration/rules"
+            ]
+          },
+          {
+            "group": "Features",
+            "pages": [
+              "features/layouts",
+              "features/scratchpad",
+              "features/overview-mode",
+              "features/ipc",
+              "features/window-effects",
+              "features/xwayland"
+            ]
+          },
+          {
+            "group": "Advanced",
+            "pages": [
+              "advanced/mmsg-ipc-tool",
+              "advanced/custom-scripts",
+              "advanced/nixos-integration",
+              "advanced/troubleshooting"
             ]
           }
         ]
       },
       {
-        "tab": "API reference",
+        "tab": "Reference",
         "groups": [
           {
-            "group": "API documentation",
+            "group": "Command Reference",
             "pages": [
-              "api-reference/introduction"
+              "reference/keybindings",
+              "reference/window-commands",
+              "reference/layout-commands",
+              "reference/tag-commands"
             ]
           },
           {
-            "group": "Endpoint examples",
+            "group": "Configuration Options",
             "pages": [
-              "api-reference/endpoint/get",
-              "api-reference/endpoint/create",
-              "api-reference/endpoint/delete",
-              "api-reference/endpoint/webhook"
+              "reference/config-options",
+              "reference/animation-options",
+              "reference/effect-options"
+            ]
+          },
+          {
+            "group": "IPC Protocol",
+            "pages": [
+              "reference/ipc-overview",
+              "reference/ipc-commands"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Community",
+        "groups": [
+          {
+            "group": "Resources",
+            "pages": [
+              "community/contributing",
+              "community/packaging",
+              "community/recommended-tools",
+              "community/support"
             ]
           }
         ]
       }
-    ],
-    "global": {
-      "anchors": [
-        {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
-          "icon": "book-open-cover"
-        },
-        {
-          "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
-          "icon": "newspaper"
-        }
-      ]
-    }
-  },
-  "logo": {
-    "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg"
-  },
-  "navbar": {
-    "links": [
-      {
-        "label": "Support",
-        "href": "mailto:hi@mintlify.com"
-      }
-    ],
-    "primary": {
-      "type": "button",
-      "label": "Dashboard",
-      "href": "https://dashboard.mintlify.com"
-    }
-  },
-  "contextual": {
-    "options": [
-     "copy",
-     "view",
-     "chatgpt",
-     "claude",
-     "perplexity",
-     "mcp",
-     "cursor",
-     "vscode"
-   ]
-  },
-  "footer": {
-    "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
-    }
+    ]
   }
 }

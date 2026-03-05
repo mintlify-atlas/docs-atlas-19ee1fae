@@ -1,0 +1,389 @@
+---
+title: Keybinding Reference
+description: Complete reference for all keybindings in Mango Wayland Compositor
+---
+
+## Overview
+
+Mango uses a declarative keybinding syntax where you define modifier keys and commands. Keybindings are defined in `config.conf` using the `bind=` directive.
+
+## Binding Syntax
+
+```
+bind=MODIFIER,key,command,arguments
+```
+
+### Modifier Keys
+
+- `SUPER` - Super/Windows/Meta key
+- `ALT` - Alt key
+- `CTRL` - Control key
+- `SHIFT` - Shift key
+- `NONE` - No modifier
+
+Multiple modifiers can be combined with `+`:
+- `SUPER+SHIFT`
+- `ALT+SHIFT`
+- `CTRL+SUPER`
+
+### Key Names
+
+Key names can be determined using the `wev` or `xev` command. Common keys include:
+- Letters: `a-z`
+- Numbers: `1-9`, `0`
+- Special keys: `Return`, `space`, `Tab`, `backslash`
+- Arrow keys: `Left`, `Right`, `Up`, `Down`
+
+## Default Keybindings
+
+### System Control
+
+<ParamField path="SUPER + r" type="reload_config">
+  Reload the configuration file without restarting
+  ```
+  bind=SUPER,r,reload_config
+  ```
+</ParamField>
+
+<ParamField path="SUPER + m" type="quit">
+  Exit Mango compositor
+  ```
+  bind=SUPER,m,quit
+  ```
+</ParamField>
+
+### Application Launching
+
+<ParamField path="ALT + space" type="spawn">
+  Launch application launcher (rofi)
+  ```
+  bind=Alt,space,spawn,rofi -show drun
+  ```
+</ParamField>
+
+<ParamField path="ALT + Return" type="spawn">
+  Launch terminal (foot)
+  ```
+  bind=Alt,Return,spawn,foot
+  ```
+</ParamField>
+
+<ParamField path="ALT + q" type="killclient">
+  Close the focused window
+  ```
+  bind=ALT,q,killclient,
+  ```
+</ParamField>
+
+### Window Focus
+
+<ParamField path="SUPER + Tab" type="focusstack">
+  Focus next window in stack
+  ```
+  bind=SUPER,Tab,focusstack,next
+  ```
+</ParamField>
+
+<ParamField path="ALT + Arrow Keys" type="focusdir">
+  Focus window in direction (left, right, up, down)
+  ```
+  bind=ALT,Left,focusdir,left
+  bind=ALT,Right,focusdir,right
+  bind=ALT,Up,focusdir,up
+  bind=ALT,Down,focusdir,down
+  ```
+</ParamField>
+
+### Window Manipulation
+
+<ParamField path="SUPER + SHIFT + Arrow Keys" type="exchange_client">
+  Swap window with adjacent window in direction
+  ```
+  bind=SUPER+SHIFT,Up,exchange_client,up
+  bind=SUPER+SHIFT,Down,exchange_client,down
+  bind=SUPER+SHIFT,Left,exchange_client,left
+  bind=SUPER+SHIFT,Right,exchange_client,right
+  ```
+</ParamField>
+
+### Window States
+
+<ParamField path="SUPER + g" type="toggleglobal">
+  Toggle window global state (visible on all tags)
+  ```
+  bind=SUPER,g,toggleglobal,
+  ```
+</ParamField>
+
+<ParamField path="ALT + Tab" type="toggleoverview">
+  Toggle overview mode
+  ```
+  bind=ALT,Tab,toggleoverview,
+  ```
+</ParamField>
+
+<ParamField path="ALT + backslash" type="togglefloating">
+  Toggle window floating state
+  ```
+  bind=ALT,backslash,togglefloating,
+  ```
+</ParamField>
+
+<ParamField path="ALT + a" type="togglemaximizescreen">
+  Toggle window maximized state
+  ```
+  bind=ALT,a,togglemaximizescreen,
+  ```
+</ParamField>
+
+<ParamField path="ALT + f" type="togglefullscreen">
+  Toggle window fullscreen state
+  ```
+  bind=ALT,f,togglefullscreen,
+  ```
+</ParamField>
+
+<ParamField path="ALT + SHIFT + f" type="togglefakefullscreen">
+  Toggle fake fullscreen (fullscreen within window area)
+  ```
+  bind=ALT+SHIFT,f,togglefakefullscreen,
+  ```
+</ParamField>
+
+<ParamField path="SUPER + i" type="minimized">
+  Minimize the focused window
+  ```
+  bind=SUPER,i,minimized,
+  ```
+</ParamField>
+
+<ParamField path="SUPER + SHIFT + I" type="restore_minimized">
+  Restore minimized window
+  ```
+  bind=SUPER+SHIFT,I,restore_minimized
+  ```
+</ParamField>
+
+<ParamField path="SUPER + o" type="toggleoverlay">
+  Toggle window overlay mode
+  ```
+  bind=SUPER,o,toggleoverlay,
+  ```
+</ParamField>
+
+<ParamField path="ALT + z" type="toggle_scratchpad">
+  Toggle scratchpad visibility
+  ```
+  bind=ALT,z,toggle_scratchpad
+  ```
+</ParamField>
+
+### Layout Control
+
+<ParamField path="SUPER + n" type="switch_layout">
+  Cycle through available layouts
+  ```
+  bind=SUPER,n,switch_layout
+  ```
+</ParamField>
+
+<ParamField path="ALT + e" type="set_proportion">
+  Set scroller layout proportion (scroller layout only)
+  ```
+  bind=ALT,e,set_proportion,1.0
+  ```
+</ParamField>
+
+<ParamField path="ALT + x" type="switch_proportion_preset">
+  Cycle through proportion presets (scroller layout only)
+  ```
+  bind=ALT,x,switch_proportion_preset,
+  ```
+</ParamField>
+
+### Tag Navigation
+
+<ParamField path="SUPER + Left/Right" type="viewtoleft/viewtoright">
+  Switch to previous/next tag
+  ```
+  bind=SUPER,Left,viewtoleft,0
+  bind=SUPER,Right,viewtoright,0
+  ```
+</ParamField>
+
+<ParamField path="CTRL + Left/Right" type="viewtoleft_have_client/viewtoright_have_client">
+  Switch to previous/next tag that has windows
+  ```
+  bind=CTRL,Left,viewtoleft_have_client,0
+  bind=CTRL,Right,viewtoright_have_client,0
+  ```
+</ParamField>
+
+<ParamField path="CTRL + 1-9" type="view">
+  Switch to specific tag (workspace)
+  ```
+  bind=Ctrl,1,view,1,0
+  bind=Ctrl,2,view,2,0
+  ...
+  bind=Ctrl,9,view,9,0
+  ```
+</ParamField>
+
+<ParamField path="ALT + 1-9" type="tag">
+  Move window to specific tag and follow it
+  ```
+  bind=Alt,1,tag,1,0
+  bind=Alt,2,tag,2,0
+  ...
+  bind=Alt,9,tag,9,0
+  ```
+</ParamField>
+
+<ParamField path="CTRL + SUPER + Left/Right" type="tagtoleft/tagtoright">
+  Move window to previous/next tag
+  ```
+  bind=CTRL+SUPER,Left,tagtoleft,0
+  bind=CTRL+SUPER,Right,tagtoright,0
+  ```
+</ParamField>
+
+### Monitor Control
+
+<ParamField path="ALT + SHIFT + Left/Right" type="focusmon">
+  Focus monitor in direction
+  ```
+  bind=alt+shift,Left,focusmon,left
+  bind=alt+shift,Right,focusmon,right
+  ```
+</ParamField>
+
+<ParamField path="SUPER + ALT + Left/Right" type="tagmon">
+  Move window to monitor in direction
+  ```
+  bind=SUPER+Alt,Left,tagmon,left
+  bind=SUPER+Alt,Right,tagmon,right
+  ```
+</ParamField>
+
+### Gaps Control
+
+<ParamField path="ALT + SHIFT + X" type="incgaps">
+  Increase gaps
+  ```
+  bind=ALT+SHIFT,X,incgaps,1
+  ```
+</ParamField>
+
+<ParamField path="ALT + SHIFT + Z" type="incgaps">
+  Decrease gaps
+  ```
+  bind=ALT+SHIFT,Z,incgaps,-1
+  ```
+</ParamField>
+
+<ParamField path="ALT + SHIFT + R" type="togglegaps">
+  Toggle gaps on/off
+  ```
+  bind=ALT+SHIFT,R,togglegaps
+  ```
+</ParamField>
+
+### Floating Window Movement
+
+<ParamField path="CTRL + SHIFT + Arrow Keys" type="movewin">
+  Move floating window by pixels
+  ```
+  bind=CTRL+SHIFT,Up,movewin,+0,-50
+  bind=CTRL+SHIFT,Down,movewin,+0,+50
+  bind=CTRL+SHIFT,Left,movewin,-50,+0
+  bind=CTRL+SHIFT,Right,movewin,+50,+0
+  ```
+</ParamField>
+
+### Floating Window Resizing
+
+<ParamField path="CTRL + ALT + Arrow Keys" type="resizewin">
+  Resize floating window by pixels
+  ```
+  bind=CTRL+ALT,Up,resizewin,+0,-50
+  bind=CTRL+ALT,Down,resizewin,+0,+50
+  bind=CTRL+ALT,Left,resizewin,-50,+0
+  bind=CTRL+ALT,Right,resizewin,+50,+0
+  ```
+</ParamField>
+
+## Mouse Bindings
+
+Mouse bindings are defined with `mousebind=`:
+
+```
+mousebind=MODIFIER,button,command,arguments
+```
+
+### Default Mouse Bindings
+
+<ParamField path="SUPER + Left Click" type="moveresize">
+  Move window by dragging
+  ```
+  mousebind=SUPER,btn_left,moveresize,curmove
+  ```
+</ParamField>
+
+<ParamField path="Middle Click" type="togglemaximizescreen">
+  Toggle maximize on click
+  ```
+  mousebind=NONE,btn_middle,togglemaximizescreen,0
+  ```
+</ParamField>
+
+<ParamField path="SUPER + Right Click" type="moveresize">
+  Resize window by dragging
+  ```
+  mousebind=SUPER,btn_right,moveresize,curresize
+  ```
+</ParamField>
+
+## Axis Bindings
+
+Axis bindings (scroll wheel) are defined with `axisbind=`:
+
+```
+axisbind=MODIFIER,direction,command
+```
+
+### Default Axis Bindings
+
+<ParamField path="SUPER + Scroll Up" type="viewtoleft_have_client">
+  Switch to previous tag with windows
+  ```
+  axisbind=SUPER,UP,viewtoleft_have_client
+  ```
+</ParamField>
+
+<ParamField path="SUPER + Scroll Down" type="viewtoright_have_client">
+  Switch to next tag with windows
+  ```
+  axisbind=SUPER,DOWN,viewtoright_have_client
+  ```
+</ParamField>
+
+## Custom Keybindings
+
+You can create custom keybindings by adding new `bind=` lines to your `config.conf`:
+
+```conf
+# Launch your preferred browser
+bind=SUPER,b,spawn,firefox
+
+# Launch file manager
+bind=SUPER,f,spawn,thunar
+
+# Custom script
+bind=SUPER+SHIFT,s,spawn_shell,/path/to/your/script.sh
+```
+
+## See Also
+
+- [Window Commands](/reference/window-commands)
+- [Layout Commands](/reference/layout-commands)
+- [Tag Commands](/reference/tag-commands)

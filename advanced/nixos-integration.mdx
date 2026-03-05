@@ -1,0 +1,612 @@
+---
+title: NixOS Integration
+description: Install and configure Mango on NixOS using flakes and modules
+---
+
+Mango provides first-class NixOS support through a flake that includes both a NixOS module and a home-manager module.
+
+## Overview
+
+The Mango flake provides:
+
+- **NixOS module** - Installs Mango and configures system-level Wayland components
+- **Home-manager module** - Manages user-level configuration and autostart
+- **Package outputs** - Pre-built Mango packages for x86_64-linux and aarch64-linux
+
+## Prerequisites
+
+- NixOS with flakes enabled
+- Home-manager (optional but recommended)
+- Basic understanding of Nix flakes
+
+## Quick Start
+
+### Flake Configuration
+
+Add Mango to your flake inputs:
+
+```nix
+{
+  inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    home-manager = {
+      url = "github:nix-community/home-manager";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    flake-parts.url = "github:hercules-ci/flake-parts";
+    mango = {
+      url = "github:mangowm/mango";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+  };
+
+  outputs = inputs@{ self, flake-parts, ... }:
+    flake-parts.lib.mkFlake { inherit inputs; } {
+      systems = [ "x86_64-linux" ];
+      flake = {
+        nixosConfigurations = {
+          hostname = inputs.nixpkgs.lib.nixosSystem {
+            system = "x86_64-linux";
+            modules = [
+              # Your existing configuration
+              ./configuration.nix
+              
+              # Add Mango NixOS module
+              inputs.mango.nixosModules.mango
+              
+              # Enable Mango
+              { programs.mango.enable = true; }
+              
+              # Home-manager configuration
+              inputs.home-manager.nixosModules.home-manager
+              {
+                home-manager = {
+                  useGlobalPkgs = true;
+                  useUserPackages = true;
+                  backupFileExtension = "backup";
+                  users."username" = {
+                    imports = [
+                      # Add Mango home-manager module
+                      inputs.mango.hmModules.mango
+                    ];
+                    
+                    wayland.windowManager.mango = {
+                      enable = true;
+                      settings = ''
+                        # Mango configuration
+                        bind=Alt,space,spawn,rofi -show drun
+                        bind=Alt,Return,spawn,foot
+                        bind=Alt,q,killclient,
+                      '';
+                      autostart_sh = ''
+                        # Autostart applications
+                        waybar &
+                        swaybg -i ~/wallpaper.jpg &
+                      '';
+                    };
+                  };
+                };
+              }
+            ];
+          };
+        };
+      };
+    };
+}
+```
+
+### Rebuild System
+
+```bash
+sudo nixos-rebuild switch --flake .#hostname
+```
+
+## NixOS Module
+
+The NixOS module (`programs.mango`) configures system-level components.
+
+### Module Options
+
+```nix
+{ config, lib, pkgs, ... }:
+
+{
+  programs.mango = {
+    # Enable Mango compositor
+    enable = true;
+    
+    # Override default package (optional)
+    package = inputs.mango.packages.${pkgs.system}.mango;
+  };
+}
+```
+
+### What It Configures
+
+When enabled, the module automatically sets up:
+
+#### XDG Desktop Portals
+
+```nix
+xdg.portal = {
+  enable = true;
+  config.mango = {
+    default = ["gtk"];
+    "org.freedesktop.impl.portal.Secret" = ["gnome-keyring"];
+    "org.freedesktop.impl.portal.ScreenCast" = ["wlr"];
+    "org.freedesktop.impl.portal.ScreenShot" = ["wlr"];
+  };
+  extraPortals = with pkgs; [
+    xdg-desktop-portal-wlr
+    xdg-desktop-portal-gtk
+  ];
+  wlr.enable = true;
+};
+```
+
+#### System Services
+
+```nix
+# Polkit authentication agent
+security.polkit.enable = true;
+
+# XWayland support
+programs.xwayland.enable = true;
+
+# Display manager integration
+services.displayManager.sessionPackages = [ cfg.package ];
+
+# Graphical desktop environment
+services.graphical-desktop.enable = true;
+```
+
+### Source Reference
+
+The NixOS module is defined in `/home/daytona/workspace/source/nix/nixos-modules.nix`.
+
+## Home-Manager Module
+
+The home-manager module (`wayland.windowManager.mango`) manages user configuration.
+
+### Module Options
+
+```nix
+{
+  wayland.windowManager.mango = {
+    # Enable Mango
+    enable = true;
+    
+    # Override package (optional)
+    package = inputs.mango.packages.${pkgs.system}.mango;
+    
+    # Configuration file content
+    settings = ''
+      # Window effects
+      blur = 1
+      shadows = 1
+      border_radius = 6
+      
+      # Keybindings
+      bind=Alt,Return,spawn,foot
+      bind=Alt,space,spawn,rofi -show drun
+      bind=Alt,q,killclient,
+      
+      # See full config.conf for more options
+    '';
+    
+    # Autostart script (no shebang needed)
+    autostart_sh = ''
+      # Status bar
+      waybar &
+      
+      # Wallpaper
+      swaybg -i ~/Pictures/wallpaper.jpg &
+      
+      # Notifications
+      mako &
+      
+      # Clipboard
+      wl-paste --watch cliphist store &
+    '';
+    
+    # Systemd integration
+    systemd = {
+      enable = true;
+      variables = [
+        "DISPLAY"
+        "WAYLAND_DISPLAY"
+        "XDG_CURRENT_DESKTOP"
+        "XDG_SESSION_TYPE"
+      ];
+      extraCommands = [
+        "systemctl --user reset-failed"
+        "systemctl --user start mango-session.target"
+      ];
+      xdgAutostart = true;
+    };
+  };
+}
+```
+
+### Generated Files
+
+The module creates:
+
+```bash
+~/.config/mango/config.conf    # From settings
+~/.config/mango/autostart.sh   # From autostart_sh (executable)
+```
+
+### Systemd Integration
+
+When `systemd.enable = true`, the module:
+
+1. Creates `mango-session.target`
+2. Exports environment variables to systemd and D-Bus
+3. Starts graphical session services
+4. Enables XDG autostart if configured
+
+The autostart.sh script automatically includes systemd activation:
+
+```bash
+# Auto-generated by home-manager
+dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP
+systemctl --user reset-failed
+systemctl --user start mango-session.target
+
+# Your autostart_sh content follows
+waybar &
+```
+
+### Source Reference
+
+The home-manager module is defined in `/home/daytona/workspace/source/nix/hm-modules.nix`.
+
+## Complete Example Configuration
+
+### Minimal Setup
+
+```nix
+# flake.nix
+{
+  inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    home-manager.url = "github:nix-community/home-manager";
+    home-manager.inputs.nixpkgs.follows = "nixpkgs";
+    mango.url = "github:mangowm/mango";
+    mango.inputs.nixpkgs.follows = "nixpkgs";
+  };
+
+  outputs = { nixpkgs, home-manager, mango, ... }: {
+    nixosConfigurations.myhost = nixpkgs.lib.nixosSystem {
+      system = "x86_64-linux";
+      modules = [
+        mango.nixosModules.mango
+        { programs.mango.enable = true; }
+        
+        home-manager.nixosModules.home-manager
+        {
+          home-manager.users.myuser = {
+            imports = [ mango.hmModules.mango ];
+            wayland.windowManager.mango.enable = true;
+          };
+        }
+      ];
+    };
+  };
+}
+```
+
+### Full-Featured Setup
+
+```nix
+# home.nix
+{ config, pkgs, inputs, ... }:
+
+{
+  imports = [
+    inputs.mango.hmModules.mango
+  ];
+
+  wayland.windowManager.mango = {
+    enable = true;
+    
+    settings = ''
+      # Window effects
+      blur = 1
+      blur_optimized = 1
+      shadows = 1
+      border_radius = 8
+      
+      # Animations
+      animations = 1
+      animation_type_open = slide
+      animation_duration_open = 300
+      
+      # Layouts
+      tagrule=id:1,layout_name:tile
+      tagrule=id:2,layout_name:scroller
+      
+      # Keybindings
+      bind=SUPER,r,reload_config
+      bind=Alt,Return,spawn,${pkgs.foot}/bin/foot
+      bind=Alt,space,spawn,${pkgs.rofi-wayland}/bin/rofi -show drun
+      bind=Alt,q,killclient,
+      bind=SUPER,m,quit
+      
+      # Tags
+      bind=Ctrl,1,view,1,0
+      bind=Ctrl,2,view,2,0
+      bind=Alt,1,tag,1,0
+      bind=Alt,2,tag,2,0
+      
+      # Window management
+      bind=ALT,Left,focusdir,left
+      bind=ALT,Right,focusdir,right
+      bind=ALT,Up,focusdir,up
+      bind=ALT,Down,focusdir,down
+      bind=ALT,f,togglefullscreen,
+      bind=ALT,backslash,togglefloating,
+    '';
+    
+    autostart_sh = ''
+      # Status bar
+      ${pkgs.waybar}/bin/waybar &
+      
+      # Wallpaper
+      ${pkgs.swaybg}/bin/swaybg -i ~/Pictures/wallpaper.jpg -m fill &
+      
+      # Notifications
+      ${pkgs.mako}/bin/mako &
+      
+      # Clipboard manager
+      ${pkgs.wl-clipboard}/bin/wl-paste --watch ${pkgs.cliphist}/bin/cliphist store &
+      
+      # Night light
+      ${pkgs.wlsunset}/bin/wlsunset -l 39.9 -L 116.3 &
+      
+      # Authentication agent
+      ${pkgs.polkit_gnome}/libexec/polkit-gnome-authentication-agent-1 &
+    '';
+    
+    systemd = {
+      enable = true;
+      xdgAutostart = true;
+    };
+  };
+  
+  # Additional Wayland tools
+  home.packages = with pkgs; [
+    rofi-wayland
+    foot
+    waybar
+    swaybg
+    mako
+    wl-clipboard
+    cliphist
+    wlsunset
+    grim
+    slurp
+    swaylock
+  ];
+}
+```
+
+## Package Dependencies
+
+### Build Dependencies
+
+The Mango package depends on:
+
+```nix
+# From nix/default.nix
+buildInputs = [
+  wayland
+  wayland-protocols
+  libinput
+  libdrm
+  libxkbcommon
+  pixman
+  libdisplay-info
+  libliftoff
+  hwdata
+  seatd
+  pcre2
+  xorg.libxcb
+  xwayland
+  scenefx  # Window effects library
+];
+```
+
+### Runtime Dependencies
+
+Recommended packages for a complete setup:
+
+```nix
+home.packages = with pkgs; [
+  # Core tools
+  rofi-wayland       # Application launcher
+  foot               # Terminal
+  waybar             # Status bar
+  
+  # Desktop portals
+  xdg-desktop-portal
+  xdg-desktop-portal-wlr
+  xdg-desktop-portal-gtk
+  
+  # Utilities
+  wl-clipboard       # Clipboard
+  cliphist          # Clipboard history
+  grim              # Screenshots
+  slurp             # Area selection
+  swaylock          # Screen locker
+  swayidle          # Idle manager
+  wlsunset          # Night light
+  
+  # Media
+  swaybg            # Wallpaper
+  imv               # Image viewer
+  mpv               # Video player
+  
+  # Notifications
+  mako              # Or swaync
+  libnotify         # notify-send
+];
+```
+
+## Flake Structure
+
+The Mango flake provides:
+
+```nix
+# From flake.nix
+outputs = {
+  # Modules
+  hmModules.mango = import ./nix/hm-modules.nix self;
+  nixosModules.mango = import ./nix/nixos-modules.nix self;
+  
+  # Packages
+  packages.x86_64-linux.default = mango;
+  packages.x86_64-linux.mango = mango;
+  packages.aarch64-linux.default = mango;
+  packages.aarch64-linux.mango = mango;
+  
+  # Overlay
+  overlays.default = final: prev: {
+    mango = mango;
+  };
+  
+  # Dev shell
+  devShells.x86_64-linux.default = mango.overrideAttrs (old: {
+    nativeBuildInputs = old.nativeBuildInputs ++ [ ];
+  });
+};
+```
+
+## Using Without Home-Manager
+
+If you don't use home-manager, manually create config files:
+
+```nix
+# configuration.nix
+{ config, pkgs, inputs, ... }:
+
+{
+  programs.mango.enable = true;
+  
+  environment.systemPackages = [
+    inputs.mango.packages.${pkgs.system}.mango
+  ];
+  
+  # Manual configuration
+  environment.etc."xdg/mango/config.conf".text = ''
+    bind=Alt,Return,spawn,foot
+    # ... more config
+  '';
+}
+```
+
+Then symlink to user config:
+```bash
+mkdir -p ~/.config/mango
+ln -s /etc/xdg/mango/config.conf ~/.config/mango/config.conf
+```
+
+## Development Setup
+
+Use the dev shell for development:
+
+```bash
+# Enter dev environment
+nix develop github:mangowm/mango
+
+# Or with local checkout
+git clone https://github.com/mangowm/mango
+cd mango
+nix develop
+
+# Build
+meson build
+ninja -C build
+
+# Run
+./build/mango
+```
+
+## Troubleshooting
+
+<Accordion title="Mango doesn't appear in display manager">
+Ensure the NixOS module is imported and enabled:
+
+```nix
+imports = [ inputs.mango.nixosModules.mango ];
+programs.mango.enable = true;
+```
+
+The module adds Mango to `services.displayManager.sessionPackages`.
+</Accordion>
+
+<Accordion title="Config changes don't apply">
+Home-manager doesn't auto-reload. After changes:
+
+```bash
+home-manager switch --flake .#user@host
+
+# Then reload Mango
+mmsg -s -d "reload_config"
+# Or restart session
+```
+</Accordion>
+
+<Accordion title="Systemd services don't start">
+Check systemd integration:
+
+```bash
+# Verify target exists
+systemctl --user status mango-session.target
+
+# Check environment
+systemctl --user show-environment | grep WAYLAND
+
+# Restart target
+systemctl --user restart mango-session.target
+```
+
+Ensure `systemd.enable = true` in home-manager config.
+</Accordion>
+
+<Accordion title="Screen sharing doesn't work">
+Verify portal configuration:
+
+```bash
+# Check running portals
+ls /run/user/$(id -u)/xdg-desktop-portal/
+
+# Test portal
+gdbus call --session \
+  --dest org.freedesktop.portal.Desktop \
+  --object-path /org/freedesktop/portal/desktop \
+  --method org.freedesktop.DBus.Peer.Ping
+```
+
+The NixOS module should configure portals automatically.
+</Accordion>
+
+<Accordion title="Build fails with scenefx error">
+The flake pins scenefx as a dependency. If building fails:
+
+```bash
+# Update flake inputs
+nix flake update
+
+# Or update only scenefx
+nix flake lock --update-input scenefx
+```
+</Accordion>
+
+## See Also
+
+- [NixOS Manual](https://nixos.org/manual/nixos/stable/) - NixOS configuration
+- [Home-Manager Manual](https://nix-community.github.io/home-manager/) - User environment
+- [Nix Flakes](https://nixos.wiki/wiki/Flakes) - Flake documentation
+- [Configuration Reference](/reference/config-options) - Mango configuration options

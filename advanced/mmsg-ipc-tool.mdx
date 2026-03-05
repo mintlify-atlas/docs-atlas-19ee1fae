@@ -1,0 +1,381 @@
+---
+title: mmsg IPC Tool
+description: Control Mango compositor through the mmsg IPC tool
+---
+
+`mmsg` is the IPC (Inter-Process Communication) tool for Mango Wayland Compositor. It allows you to query and control the compositor's state from external scripts and programs.
+
+## Overview
+
+`mmsg` communicates with Mango through the Wayland protocol using the `zdwl_ipc_manager_v2` interface. It supports three operation modes:
+
+- **Get mode** (`-g`): Query current state
+- **Set mode** (`-s`): Modify compositor state
+- **Watch mode** (`-w`): Stream live events
+
+## Installation
+
+`mmsg` is built and installed automatically when you compile Mango:
+
+```bash
+cd mango
+meson build -Dprefix=/usr
+sudo ninja -C build install
+```
+
+The binary will be installed to `/usr/bin/mmsg`.
+
+## Usage Syntax
+
+```bash
+# Get values
+mmsg [-o <output>] (-g | -w) [-OotlcvmfxekbA]
+
+# Set values
+mmsg [-o <output>] -s [-t <tags>] [-l <layout>] [-c <tags>] [-d <cmd>,<args>]
+
+# Query information
+mmsg [-OTLq]
+```
+
+## Operation Modes
+
+### Get Mode (`-g`)
+
+Query the current state of the compositor:
+
+```bash
+# Get all information for current monitor
+mmsg -g
+
+# Get tag information
+mmsg -g -t
+
+# Get current layout
+mmsg -g -l
+
+# Get focused window title and app ID
+mmsg -g -c
+
+# Get fullscreen status
+mmsg -g -m
+```
+
+### Set Mode (`-s`)
+
+Modify the compositor state:
+
+```bash
+# Switch to tag 1
+mmsg -s -t 1
+
+# Toggle tag 2 (add to current view)
+mmsg -s -t ^2
+
+# Remove tag 3 from view
+mmsg -s -t -3
+
+# Set layout
+mmsg -s -l tile
+
+# Move focused window to tag 5
+mmsg -s -c 5
+
+# Quit compositor
+mmsg -s -q
+```
+
+### Watch Mode (`-w`)
+
+Stream live events from the compositor:
+
+```bash
+# Watch tag changes
+mmsg -w -t
+
+# Watch focused window changes
+mmsg -w -c
+
+# Watch output changes
+mmsg -w -O
+```
+
+## Get Options
+
+These flags retrieve specific information:
+
+| Flag | Description |
+|------|-------------|
+| `-O` | Output (monitor) name |
+| `-o` | Monitor focus information |
+| `-t` | Selected tags and tag state |
+| `-l` | Current layout |
+| `-c` | Focused client title and app ID |
+| `-v` | Status bar visibility |
+| `-m` | Fullscreen status |
+| `-f` | Floating status |
+| `-x` | Focused client geometry (x, y, width, height) |
+| `-e` | Name of last focused layer |
+| `-k` | Current keyboard layout |
+| `-b` | Current keybind mode |
+| `-A` | Monitor scale factor |
+| `-T` | Number of tags |
+| `-L` | All available layouts |
+
+## Set Options
+
+These flags modify compositor state:
+
+### Tag Manipulation
+
+The `-t` flag accepts tag numbers with optional modifiers:
+
+```bash
+# Switch to tag (clear others)
+mmsg -s -t 1
+
+# Add tag to view
+mmsg -s -t +2
+
+# Remove tag from view
+mmsg -s -t -3
+
+# Toggle tag
+mmsg -s -t ^4
+
+# View multiple tags
+mmsg -s -t 1+2+3
+```
+
+### Client Tag Assignment
+
+The `-c` flag moves the focused window to tags:
+
+```bash
+# Move window to tag 2
+mmsg -s -c 2
+
+# Add window to tag 3 (keep on current tag too)
+mmsg -s -c +3
+
+# Remove window from tag 4
+mmsg -s -c -4
+
+# Toggle window on tag 5
+mmsg -s -c ^5
+```
+
+### Dispatch Commands
+
+The `-d` flag executes internal compositor commands:
+
+```bash
+# Dispatch with command name
+mmsg -s -d "killclient"
+
+# Dispatch with arguments (up to 5)
+mmsg -s -d "spawn,foot"
+mmsg -s -d "view,1,0"
+mmsg -s -d "movewin,+0,-50"
+```
+
+Arguments are comma-separated. Whitespace around commas is automatically trimmed.
+
+## Output Selection
+
+Use `-o` to target a specific monitor:
+
+```bash
+# Get info from specific output
+mmsg -g -o "HDMI-A-1" -t
+
+# Set layout on specific output
+mmsg -s -o "eDP-1" -l scroller
+
+# List all outputs
+mmsg -O
+```
+
+If no output is specified, `mmsg` operates on the currently focused monitor.
+
+## Tag State Output
+
+When querying tags with `-g -t`, `mmsg` outputs detailed information:
+
+```bash
+$ mmsg -g -t
+eDP-1 tag 1 1 2 1  # tag_num state clients focused
+eDP-1 tag 2 0 1 0
+eDP-1 tag 3 0 0 0
+# ...
+eDP-1 clients 3
+eDP-1 tags 7 1 0  # occupied selected urgent (decimal)
+eDP-1 tags 000000111 000000001 000000000  # binary representation
+```
+
+**Tag states:**
+- `0` = inactive
+- `1` = active (tag is visible)
+- `2` = urgent (window needs attention)
+
+**Tag summary:**
+- **occupied** (occ): Bitmask of tags with windows
+- **selected** (seltags): Bitmask of currently visible tags
+- **urgent** (urg): Bitmask of tags with urgent windows
+
+## Practical Examples
+
+### Status Bar Integration
+
+```bash
+#!/bin/bash
+# Update status bar with current tags
+mmsg -w -t | while read -r output type data; do
+    case "$type" in
+        tag)
+            tag_num=$(echo "$data" | awk '{print $1}')
+            state=$(echo "$data" | awk '{print $2}')
+            clients=$(echo "$data" | awk '{print $3}')
+            echo "Tag $tag_num: $clients windows"
+            ;;
+        tags)
+            occ=$(echo "$data" | awk '{print $1}')
+            sel=$(echo "$data" | awk '{print $2}')
+            echo "Active tags: $sel"
+            ;;
+    esac
+done
+```
+
+### Window Title Monitor
+
+```bash
+#!/bin/bash
+# Watch focused window changes
+mmsg -w -c | while read -r output type value; do
+    case "$type" in
+        title)
+            echo "Window title: $value"
+            ;;
+        appid)
+            echo "App ID: $value"
+            ;;
+    esac
+done
+```
+
+### Tag Switcher Script
+
+```bash
+#!/bin/bash
+# Smart tag switcher - go to next tag with windows
+current_tag=$(mmsg -g -t | grep "tag.*1.*1" | head -1 | awk '{print $3}')
+next_tag=$((current_tag % 9 + 1))
+
+while [ "$(mmsg -g -t | grep "tag $next_tag" | awk '{print $5}')" = "0" ]; do
+    next_tag=$((next_tag % 9 + 1))
+    [ "$next_tag" = "$current_tag" ] && break
+done
+
+mmsg -s -t "$next_tag"
+```
+
+### Layout Cycle
+
+```bash
+#!/bin/bash
+# Cycle through layouts
+layouts=(tile scroller grid monocle)
+current=$(mmsg -g -l | awk '{print $3}')
+
+for i in "${!layouts[@]}"; do
+    if [ "${layouts[$i]}" = "$current" ]; then
+        next_idx=$(( (i + 1) % ${#layouts[@]} ))
+        mmsg -s -l "${layouts[$next_idx]}"
+        break
+    fi
+done
+```
+
+## Source Code Reference
+
+The `mmsg` implementation can be found in `/home/daytona/workspace/source/mmsg/mmsg.c`.
+
+**Key functions:**
+- `dwl_ipc_output_tag()` - Processes tag state updates (mmsg.c:142)
+- `dwl_ipc_output_frame()` - Handles state changes and dispatches commands (mmsg.c:313)
+- `bin_str_9bits()` - Converts tag masks to binary strings (mmsg.c:89)
+
+**Tag mask manipulation:**
+```c
+// Set exact tag (mmsg.c:332)
+mask = 1 << (i - 1);
+
+// Toggle tag (mmsg.c:344)
+mask ^= 1 << (i - 1);
+
+// Add tag (mmsg.c:342)
+mask |= 1 << (i - 1);
+
+// Remove tag (mmsg.c:338)
+mask &= ~(1 << (i - 1));
+```
+
+## Troubleshooting
+
+<Accordion title="mmsg returns 'bad display'">
+This error means `mmsg` cannot connect to the Wayland display.
+
+**Solutions:**
+- Ensure `WAYLAND_DISPLAY` environment variable is set
+- Check that Mango is running
+- Verify you're in the same session as Mango
+
+```bash
+echo $WAYLAND_DISPLAY  # Should output something like "wayland-0"
+```
+</Accordion>
+
+<Accordion title="mmsg returns 'bad dwl-ipc protocol'">
+Mango's IPC protocol is not available.
+
+**Causes:**
+- Mango was built without IPC support
+- Using an incompatible version of mmsg with Mango
+
+**Solution:** Rebuild both Mango and mmsg from the same source tree.
+</Accordion>
+
+<Accordion title="Tag changes don't work as expected">
+Double-check your tag number and modifier syntax:
+
+```bash
+# CORRECT
+mmsg -s -t 1       # Switch to tag 1
+mmsg -s -t ^2      # Toggle tag 2
+mmsg -s -t +3-4    # Add tag 3, remove tag 4
+
+# INCORRECT
+mmsg -s -t +1      # Works but unnecessary
+mmsg -s -t "1 2"   # Wrong syntax
+```
+</Accordion>
+
+<Accordion title="Dispatch commands fail silently">
+Ensure command names match exactly with config.conf bindings:
+
+```bash
+# Check available commands in your config
+grep "^bind=" ~/.config/mango/config.conf
+
+# Use exact command names
+mmsg -s -d "killclient"      # Correct
+mmsg -s -d "kill_client"     # May not work
+```
+</Accordion>
+
+## See Also
+
+- [Custom Scripts](/advanced/custom-scripts) - Examples using mmsg
+- [Configuration Reference](/configuration/keybindings) - Available commands for dispatch
+- [Troubleshooting](/advanced/troubleshooting) - General Mango issues

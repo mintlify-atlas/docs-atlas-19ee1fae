@@ -1,0 +1,169 @@
+---
+title: Animation Options
+description: Complete reference for animation configuration in Mango
+---
+
+Mango provides extensive animation options to customize window and tag transition effects.
+
+## General Animation Settings
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `animations` | integer | `1` | Enable window animations (0=disabled, 1=enabled) |
+| `layer_animations` | integer | `1` | Enable animations for layer surfaces (0=disabled, 1=enabled) |
+
+## Animation Types
+
+### Window Open Animation
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `animation_type_open` | string | `slide` | Animation type when opening windows |
+| `animation_fade_in` | integer | `1` | Enable fade-in during open animation |
+| `fadein_begin_opacity` | float | `0.5` | Starting opacity for fade-in (0.0-1.0) |
+
+**Supported types:** `zoom`, `slide`
+
+### Window Close Animation
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `animation_type_close` | string | `slide` | Animation type when closing windows |
+| `animation_fade_out` | integer | `1` | Enable fade-out during close animation |
+| `fadeout_begin_opacity` | float | `0.8` | Starting opacity for fade-out (0.0-1.0) |
+
+**Supported types:** `zoom`, `slide`
+
+## Zoom Animation Parameters
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `zoom_initial_ratio` | float | `0.3` | Initial scale ratio for zoom animation (0.0-1.0) |
+| `zoom_end_ratio` | float | `0.8` | End scale ratio for zoom animation (0.0-1.0) |
+
+## Tag Animation
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `tag_animation_direction` | integer | `1` | Tag switch animation direction (1=horizontal, 0=vertical) |
+
+## Animation Duration
+
+All duration values are in milliseconds.
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `animation_duration_open` | integer | `400` | Duration for window open animation (ms) |
+| `animation_duration_close` | integer | `800` | Duration for window close animation (ms) |
+| `animation_duration_move` | integer | `500` | Duration for window move animation (ms) |
+| `animation_duration_tag` | integer | `350` | Duration for tag switch animation (ms) |
+| `animation_duration_focus` | integer | `0` | Duration for focus change animation (ms) |
+
+<Note>
+Setting duration to `0` disables that specific animation transition.
+</Note>
+
+## Animation Curves
+
+Animation curves use cubic-bezier format with four values: `x1,y1,x2,y2`
+
+These control points define the timing function for animations, similar to CSS cubic-bezier.
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `animation_curve_open` | bezier | `0.46,1.0,0.29,1` | Timing curve for open animation |
+| `animation_curve_close` | bezier | `0.08,0.92,0,1` | Timing curve for close animation |
+| `animation_curve_move` | bezier | `0.46,1.0,0.29,1` | Timing curve for move animation |
+| `animation_curve_tag` | bezier | `0.46,1.0,0.29,1` | Timing curve for tag switch |
+| `animation_curve_focus` | bezier | `0.46,1.0,0.29,1` | Timing curve for focus change |
+| `animation_curve_opafadein` | bezier | `0.46,1.0,0.29,1` | Timing curve for fade-in opacity |
+| `animation_curve_opafadeout` | bezier | `0.5,0.5,0.5,0.5` | Timing curve for fade-out opacity |
+
+## Understanding Cubic-Bezier Curves
+
+Cubic-bezier curves are defined by four values: `x1, y1, x2, y2`
+
+- `x1, y1` - First control point (x1 and y1 should be between 0 and 1)
+- `x2, y2` - Second control point (x2 and y2 should be between 0 and 1)
+- Start point is always `(0, 0)` and end point is always `(1, 1)`
+
+### Common Curve Presets
+
+| Preset | Values | Effect |
+|--------|--------|--------|
+| Linear | `0.0,0.0,1.0,1.0` | Constant speed |
+| Ease | `0.25,0.1,0.25,1.0` | Slow start, fast middle, slow end |
+| Ease-in | `0.42,0.0,1.0,1.0` | Slow start, fast end |
+| Ease-out | `0.0,0.0,0.58,1.0` | Fast start, slow end |
+| Ease-in-out | `0.42,0.0,0.58,1.0` | Slow start and end |
+
+## Per-Layer Animation Override
+
+You can override animation types for specific layer surfaces using layer rules:
+
+```conf
+layerrule=animation_type_open:zoom,layer_name:rofi
+layerrule=animation_type_close:zoom,layer_name:rofi
+```
+
+This is useful for customizing animations for specific applications like launchers, notifications, or overlays.
+
+## Examples
+
+### Smooth and Slow Animations
+
+```conf
+animations=1
+animation_type_open=slide
+animation_type_close=slide
+animation_duration_open=600
+animation_duration_close=600
+animation_curve_open=0.25,0.1,0.25,1.0
+animation_curve_close=0.25,0.1,0.25,1.0
+```
+
+### Fast and Snappy Animations
+
+```conf
+animations=1
+animation_type_open=zoom
+animation_type_close=zoom
+animation_duration_open=200
+animation_duration_close=200
+zoom_initial_ratio=0.8
+animation_curve_open=0.0,0.0,0.58,1.0
+animation_curve_close=0.42,0.0,1.0,1.0
+```
+
+### Disable All Animations
+
+```conf
+animations=0
+layer_animations=0
+```
+
+### Fade-Only Animations
+
+```conf
+animations=1
+animation_type_open=slide
+animation_type_close=slide
+animation_fade_in=1
+animation_fade_out=1
+fadein_begin_opacity=0.0
+fadeout_begin_opacity=1.0
+animation_duration_open=300
+animation_duration_close=300
+```
+
+## Performance Considerations
+
+- Longer animation durations (>500ms) may feel sluggish on slower hardware
+- Zoom animations can be more GPU-intensive than slide animations
+- Disabling `layer_animations` can improve performance on systems with many overlay surfaces
+- Setting `animation_duration_focus=0` prevents focus animations, which can feel more responsive
+
+## See Also
+
+- [Effect Options](/reference/effect-options) - Blur, shadows, and visual effects
+- [Configuration Options](/reference/config-options) - All configuration options

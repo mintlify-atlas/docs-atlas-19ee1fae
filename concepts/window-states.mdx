@@ -1,0 +1,444 @@
+---
+title: Window States
+description: Understanding Mango's window state system for advanced window management
+---
+
+## Overview
+
+Mango supports multiple **window states** that affect how windows are displayed and behave. Windows can be in special states like minimized, maximized, fullscreen, floating, global, and overlay modes.
+
+## Core Window States
+
+### Floating vs. Tiled
+
+**Tiled windows** follow the layout algorithm, while **floating windows** can be positioned and resized freely.
+
+```conf
+# Toggle between floating and tiled
+bind=ALT,backslash,togglefloating,
+```
+
+**Window is considered tiled when:**
+```c
+#define ISTILED(A) \
+    (A && !(A)->isfloating && !(A)->isminimized && !(A)->iskilling && \
+     !(A)->ismaximizescreen && !(A)->isfullscreen && !(A)->isunglobal)
+```
+
+**Floating window behavior:**
+- Ignores layout algorithm
+- Can be moved with `SUPER + btn_left`
+- Can be resized with `SUPER + btn_right`
+- Respects window size hints (unless `isnosizehint` is set)
+
+### Minimized State
+
+Minimized windows are hidden from view but remain in memory.
+
+```conf
+# Minimize focused window
+bind=SUPER,i,minimized,
+
+# Restore last minimized window
+bind=SUPER+SHIFT,I,restore_minimized
+```
+
+**Implementation details:**
+```c
+int32_t isminimized;      // Window is minimized
+uint32_t mini_restore_tag; // Tag to restore to
+```
+
+When minimized:
+- Window scene node is disabled
+- Window is removed from visible clients
+- Tag assignment is saved for restoration
+- Foreign toplevel is notified (for taskbars)
+
+**Restoration behavior:**
+```c
+// Restoring brings window back to its original tag
+c->tags = c->mini_restore_tag;
+c->isminimized = 0;
+```
+
+### Maximized State
+
+"Maximize screen" mode expands the window to fill the entire monitor while maintaining borders.
+
+```conf
+# Toggle maximize
+bind=ALT,a,togglemaximizescreen,
+
+# Mouse gesture
+mousebind=NONE,btn_middle,togglemaximizescreen,0
+```
+
+**Behavior:**
+- Overrides tiling layout
+- Fills monitor work area
+- Keeps borders and decorations
+- Stores original geometry for restoration
+
+**Maximized geometry:**
+```c
+if (c->ismaximizescreen) {
+    // Fill monitor work area
+    c->geom = m->w;  // m->w is the usable area (minus panels)
+}
+```
+
+**Border color indicator:**
+```conf
+maximizescreencolor=0x89aa61ff  # Green border when maximized
+```
+
+### Fullscreen State
+
+True fullscreen mode that covers the entire output, including panels.
+
+```conf
+# Toggle fullscreen
+bind=ALT,f,togglefullscreen,
+
+# Toggle fake fullscreen (respects panels)
+bind=ALT+SHIFT,f,togglefakefullscreen,
+```
+
+**Fullscreen modes:**
+
+1. **True fullscreen** (`isfullscreen`):
+   - Covers entire monitor including panels
+   - Hides borders
+   - Bypasses compositor effects
+   - Best for games and media
+
+2. **Fake fullscreen** (`isfakefullscreen`):
+   - Maximizes within work area
+   - Respects panels and bars
+   - Keeps borders (optional)
+   - Better for applications with UI chrome
+
+**Geometry backup:**
+```c
+// Geometry is saved before fullscreen
+int32_t fullscreen_backup_x, fullscreen_backup_y;
+int32_t fullscreen_backup_w, fullscreen_backup_h;
+```
+
+### Global State
+
+Global windows appear on **all tags**.
+
+```conf
+# Toggle global state
+bind=SUPER,g,toggleglobal,
+```
+
+**Characteristics:**
+- Visible regardless of active tag
+- Tags automatically update to match current view
+- Useful for persistent overlays
+- Color-coded border:
+
+```conf
+globalcolor=0xb153a7ff  # Purple border for global windows
+```
+
+**Implementation:**
+```c
+if (c->isglobal && VISIBLEON(c, m)) {
+    // Update tags to match monitor's active tagset
+    c->tags = m->tagset[m->seltags];
+}
+```
+
+### Unglobal State
+
+Temporarily removes a window from normal visibility:
+
+```c
+int32_t isunglobal;  // Hidden from tag system
+```
+
+- Window exists but isn't visible on any tag
+- Not counted in visible client calculations
+- Can be restored to normal visibility
+
+### Overlay State
+
+Overlay windows float above all other windows.
+
+```conf
+# Toggle overlay mode
+bind=SUPER,o,toggleoverlay,
+```
+
+**Behavior:**
+- Always on top
+- Renders in special layer (`LyrOverlay`)
+- Floating by default
+- Colored border:
+
+```conf
+overlaycolor=0x14a57cff  # Teal border for overlay windows
+```
+
+**Scene layer assignment:**
+```c
+if (c->isoverlay && c->scene) {
+    wlr_scene_node_reparent(&c->scene->node, layers[LyrOverlay]);
+}
+```
+
+## Special Window Properties
+
+### No Border
+
+Removes borders from a window:
+
+```c
+int32_t isnoborder;  // Disable border rendering
+```
+
+```conf
+# Border configuration
+borderpx=4
+no_border_when_single=0  # Hide borders when only one window
+```
+
+### No Shadow
+
+Disables shadow rendering:
+
+```c
+int32_t isnoshadow;  // Disable shadow effects
+```
+
+### No Radius
+
+Disables rounded corners:
+
+```c
+int32_t isnoradius;  // Disable corner radius
+```
+
+```conf
+border_radius=6
+no_radius_when_single=0
+```
+
+### No Animation
+
+Skips animations for a window:
+
+```c
+int32_t isnoanimation;  // Disable animations
+```
+
+### Scratchpad Windows
+
+Special toggleable windows that appear on demand:
+
+```c
+int32_t is_in_scratchpad;      // Window is scratchpad
+int32_t is_scratchpad_show;    // Currently visible
+int32_t isnamedscratchpad;     // Named scratchpad instance
+```
+
+```conf
+# Toggle scratchpad
+bind=ALT,z,toggle_scratchpad
+
+# Scratchpad sizing
+scratchpad_width_ratio=0.8
+scratchpad_height_ratio=0.9
+```
+
+**Scratchpad features:**
+- Hidden by default
+- Toggle to show/hide
+- Floats when shown
+- Centers on screen
+- Can cross monitors if configured:
+
+```conf
+scratchpad_cross_monitor=1
+single_scratchpad=1  # Only one scratchpad visible at a time
+```
+
+## Window State Rules
+
+Define window states in configuration:
+
+```conf
+# Example window rules with states
+windowrule=appid:floating-app,isfloating:1
+windowrule=appid:overlay-app,isoverlay:1
+windowrule=appid:terminal,isnamedscratchpad:1
+windowrule=title:Picture-in-Picture,isglobal:1,isnoborder:1
+```
+
+### Available Rule Properties
+
+```c
+// State flags
+isfloating, isfullscreen, isfakefullscreen
+isoverlay, isglobal, isunglobal
+isnoborder, isnoshadow, isnoradius, isnoanimation
+isnamedscratchpad
+
+// Behavior flags
+ignore_maximize, ignore_minimize
+force_maximize, force_tiled_state
+allow_csd  // Allow client-side decorations
+nofocus, nofadein, nofadeout
+no_force_center
+```
+
+## State Transitions and Priority
+
+### State Conflicts
+
+Some states are mutually exclusive:
+
+```c
+// Fullscreen and maximize can't coexist
+if (c->isfullscreen) {
+    c->ismaximizescreen = 0;
+}
+if (c->ismaximizescreen) {
+    c->isfullscreen = 0;
+}
+```
+
+### State Clearing
+
+When entering overview mode, certain states are cleared:
+
+```c
+void overview_backup(Client *c) {
+    // Save current states
+    c->overview_isfullscreenbak = c->isfullscreen;
+    c->overview_ismaximizescreenbak = c->ismaximizescreen;
+    
+    // Clear incompatible states
+    c->isfullscreen = 0;
+    c->ismaximizescreen = 0;
+    c->isglobal = 0;
+    c->isminimized = 0;
+    c->isoverlay = 0;
+}
+```
+
+## Border Color by State
+
+Mango uses colored borders to indicate window states:
+
+```conf
+bordercolor=0x444444ff          # Normal unfocused
+focuscolor=0xc9b890ff           # Focused window
+maximizescreencolor=0x89aa61ff  # Maximized (green)
+urgentcolor=0xad401fff          # Urgent/notification
+scratchpadcolor=0x516c93ff      # Scratchpad (blue)
+globalcolor=0xb153a7ff          # Global (purple)
+overlaycolor=0x14a57cff         # Overlay (teal)
+```
+
+## State Opacity
+
+Control opacity per state:
+
+```conf
+# Global opacity
+focused_opacity=1.0
+unfocused_opacity=1.0
+
+# Per-window opacity (window rules)
+windowrule=appid:terminal,focused_opacity:0.95
+windowrule=appid:terminal,unfocused_opacity:0.85
+```
+
+## Foreign Toplevel Protocol
+
+Mango reports window states to external tools (like taskbars) via the Foreign Toplevel protocol:
+
+```c
+// Notify taskbar of minimized state
+if (c->isminimized && c->foreign_toplevel) {
+    wlr_foreign_toplevel_handle_v1_set_minimized(c->foreign_toplevel, true);
+}
+
+// Notify of fullscreen state
+wlr_foreign_toplevel_handle_v1_set_fullscreen(c->foreign_toplevel, 
+                                              c->isfullscreen);
+```
+
+## Overview Mode State
+
+Overview mode is a special state for the monitor:
+
+```c
+int32_t isoverview;  // Monitor in overview mode
+```
+
+```conf
+# Toggle overview
+bind=ALT,Tab,toggleoverview,
+
+# Overview hotarea (mouse trigger)
+enable_hotarea=1
+hotarea_size=10
+```
+
+During overview:
+- All windows shown in grid
+- States are backed up
+- Special sizing and gaps applied
+- Different animations
+
+## State Query Macros
+
+Mango defines useful macros for state checking:
+
+```c
+// Check if window is fullscreen (including maximize)
+#define ISFULLSCREEN(A) \
+    ((A)->isfullscreen || (A)->ismaximizescreen || \
+     (A)->overview_ismaximizescreenbak || (A)->overview_isfullscreenbak)
+
+// Check if window is tiled
+#define ISTILED(A) \
+    (A && !(A)->isfloating && !(A)->isminimized && !(A)->iskilling && \
+     !(A)->ismaximizescreen && !(A)->isfullscreen && !(A)->isunglobal)
+
+// Check if window is visible on monitor
+#define VISIBLEON(C, M) \
+    ((C) && (M) && (C)->mon == (M) && ((C)->tags & (M)->tagset[(M)->seltags]))
+```
+
+## Best Practices
+
+<Card title="State Management" icon="toggle-on">
+  Use states purposefully:
+  - **Floating**: For dialogs and tools
+  - **Global**: For persistent monitoring
+  - **Overlay**: For always-visible references
+  - **Scratchpad**: For quick-access terminals
+  - **Minimize**: For temporary hiding
+</Card>
+
+<Card title="Window Rules" icon="rules">
+  Automate state assignment:
+  ```conf
+  windowrule=appid:pavucontrol,isfloating:1
+  windowrule=appid:mpv,isfullscreen:1
+  windowrule=class:dropdown,isnamedscratchpad:1
+  ```
+</Card>
+
+## Related Concepts
+
+- [Tags](/concepts/tags) - How states interact with tag visibility
+- [Layouts](/concepts/layouts) - How states override layout behavior
+- [Animations](/concepts/animations) - State transition animations

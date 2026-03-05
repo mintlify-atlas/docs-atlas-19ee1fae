@@ -1,0 +1,221 @@
+---
+title: Configuration Options
+description: Complete reference for all Mango configuration options
+---
+
+This page documents all configuration options available in Mango Wayland Compositor. Options are set in your configuration file (typically `config.conf`).
+
+## Window Effects
+
+### Blur
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `blur` | integer | `0` | Enable window blur effect (0=disabled, 1=enabled) |
+| `blur_layer` | integer | `0` | Enable blur for layer surfaces (0=disabled, 1=enabled) |
+| `blur_optimized` | integer | `1` | Use optimized blur algorithm (0=disabled, 1=enabled) |
+| `blur_params_num_passes` | integer | `2` | Number of blur passes |
+| `blur_params_radius` | integer | `5` | Blur radius in pixels |
+| `blur_params_noise` | float | `0.02` | Noise amount (0.0-1.0) |
+| `blur_params_brightness` | float | `0.9` | Brightness adjustment (0.0-2.0) |
+| `blur_params_contrast` | float | `0.9` | Contrast adjustment (0.0-2.0) |
+| `blur_params_saturation` | float | `1.2` | Saturation adjustment (0.0-2.0) |
+
+### Shadows
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `shadows` | integer | `0` | Enable window shadows (0=disabled, 1=enabled) |
+| `layer_shadows` | integer | `0` | Enable shadows for layer surfaces (0=disabled, 1=enabled) |
+| `shadow_only_floating` | integer | `1` | Only show shadows on floating windows |
+| `shadows_size` | integer | `10` | Shadow size in pixels |
+| `shadows_blur` | integer | `15` | Shadow blur amount |
+| `shadows_position_x` | integer | `0` | Shadow horizontal offset |
+| `shadows_position_y` | integer | `0` | Shadow vertical offset |
+| `shadowscolor` | hex color | `0x000000ff` | Shadow color (RGBA format) |
+
+### Window Appearance
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `border_radius` | integer | `6` | Corner radius in pixels |
+| `no_radius_when_single` | integer | `0` | Disable rounded corners when single window |
+| `focused_opacity` | float | `1.0` | Opacity of focused windows (0.0-1.0) |
+| `unfocused_opacity` | float | `1.0` | Opacity of unfocused windows (0.0-1.0) |
+| `no_border_when_single` | integer | `0` | Hide borders when single window visible |
+
+## Scroller Layout
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `scroller_structs` | integer | `20` | Maximum number of scroller structures |
+| `scroller_default_proportion` | float | `0.8` | Default window proportion in scroller layout |
+| `scroller_focus_center` | integer | `0` | Keep focused window centered |
+| `scroller_prefer_center` | integer | `0` | Prefer center position for new windows |
+| `edge_scroller_pointer_focus` | integer | `1` | Focus window at pointer edge |
+| `scroller_default_proportion_single` | float | `1.0` | Proportion when single window |
+| `scroller_proportion_preset` | float list | `0.5,0.8,1.0` | Preset proportions to cycle through |
+
+## Master-Stack Layout
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `new_is_master` | integer | `1` | New windows become master (0=disabled, 1=enabled) |
+| `default_mfact` | float | `0.55` | Master area factor (0.0-1.0) |
+| `default_nmaster` | integer | `1` | Default number of master windows |
+| `smartgaps` | integer | `0` | Disable gaps when single window |
+
+## Overview
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `hotarea_size` | integer | `10` | Size of hot corner area in pixels |
+| `enable_hotarea` | integer | `1` | Enable hot corners (0=disabled, 1=enabled) |
+| `ov_tab_mode` | integer | `0` | Overview tab mode |
+| `overviewgappi` | integer | `5` | Inner gaps in overview mode |
+| `overviewgappo` | integer | `30` | Outer gaps in overview mode |
+
+## Window Behavior
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `focus_on_activate` | integer | `1` | Focus window on activation request |
+| `idleinhibit_ignore_visible` | integer | `0` | Ignore idle inhibit when not visible |
+| `sloppyfocus` | integer | `1` | Focus follows mouse |
+| `warpcursor` | integer | `1` | Warp cursor to focused window |
+| `focus_cross_monitor` | integer | `0` | Allow focus to cross monitors |
+| `focus_cross_tag` | integer | `0` | Allow focus to cross tags |
+| `enable_floating_snap` | integer | `0` | Enable snapping for floating windows |
+| `snap_distance` | integer | `30` | Snap distance in pixels |
+| `drag_tile_to_tile` | integer | `1` | Allow dragging tiled windows to tile |
+| `axis_bind_apply_timeout` | integer | `100` | Timeout for axis binding in milliseconds |
+
+## Input Devices
+
+### Keyboard
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `repeat_rate` | integer | `25` | Key repeat rate (characters per second) |
+| `repeat_delay` | integer | `600` | Key repeat delay in milliseconds |
+| `numlockon` | integer | `0` | Enable NumLock on startup |
+| `xkb_rules_layout` | string | `us` | Keyboard layout (XKB format) |
+
+### Trackpad
+
+<Note>Trackpad settings require re-login to take effect.</Note>
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `disable_trackpad` | integer | `0` | Disable trackpad completely |
+| `tap_to_click` | integer | `1` | Enable tap to click |
+| `tap_and_drag` | integer | `1` | Enable tap and drag |
+| `drag_lock` | integer | `1` | Enable drag lock |
+| `trackpad_natural_scrolling` | integer | `0` | Enable natural scrolling |
+| `disable_while_typing` | integer | `1` | Disable trackpad while typing |
+| `left_handed` | integer | `0` | Left-handed mode |
+| `middle_button_emulation` | integer | `0` | Emulate middle button |
+| `swipe_min_threshold` | integer | `1` | Minimum swipe threshold |
+
+### Mouse
+
+<Note>Mouse settings require re-login to take effect.</Note>
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `mouse_natural_scrolling` | integer | `0` | Enable natural scrolling for mouse |
+| `cursor_size` | integer | `24` | Cursor size in pixels |
+
+## Appearance
+
+### Gaps
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `gappih` | integer | `5` | Inner horizontal gap |
+| `gappiv` | integer | `5` | Inner vertical gap |
+| `gappoh` | integer | `10` | Outer horizontal gap |
+| `gappov` | integer | `10` | Outer vertical gap |
+
+### Borders
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `borderpx` | integer | `4` | Border width in pixels |
+| `bordercolor` | hex color | `0x444444ff` | Default border color (RGBA format) |
+| `focuscolor` | hex color | `0xc9b890ff` | Focused window border color |
+| `maximizescreencolor` | hex color | `0x89aa61ff` | Maximized window border color |
+| `urgentcolor` | hex color | `0xad401fff` | Urgent window border color |
+| `scratchpadcolor` | hex color | `0x516c93ff` | Scratchpad window border color |
+| `globalcolor` | hex color | `0xb153a7ff` | Global window border color |
+| `overlaycolor` | hex color | `0x14a57cff` | Overlay window border color |
+
+### Colors
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `rootcolor` | hex color | `0x201b14ff` | Root background color (RGBA format) |
+
+### Scratchpad
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `scratchpad_width_ratio` | float | `0.8` | Scratchpad width as ratio of screen (0.0-1.0) |
+| `scratchpad_height_ratio` | float | `0.9` | Scratchpad height as ratio of screen (0.0-1.0) |
+
+## Rules
+
+### Tag Rules
+
+Define layout for each tag/workspace.
+
+```conf
+tagrule=id:1,layout_name:tile
+```
+
+**Supported layouts:**
+- `tile` - Tiled layout
+- `scroller` - Scroller layout
+- `grid` - Grid layout
+- `deck` - Deck layout
+- `monocle` - Monocle (fullscreen) layout
+- `center_tile` - Centered tile layout
+- `vertical_tile` - Vertical tile layout
+- `vertical_scroller` - Vertical scroller layout
+
+### Layer Rules
+
+Customize behavior for specific layer surfaces.
+
+```conf
+layerrule=animation_type_open:zoom,layer_name:rofi
+layerrule=animation_type_close:zoom,layer_name:rofi
+```
+
+**Available properties:**
+- `animation_type_open` - Opening animation type (zoom, slide)
+- `animation_type_close` - Closing animation type (zoom, slide)
+- `layer_name` - Name of the layer surface
+
+## Key Bindings
+
+See the [Keybindings](/reference/keybindings) page for information on configuring keyboard shortcuts.
+
+## Mouse Bindings
+
+See the [Keybindings](/reference/keybindings) page for information on configuring mouse bindings.
+
+## Axis Bindings
+
+See the [Keybindings](/reference/keybindings) page for information on configuring scroll wheel bindings.
+
+## Color Format
+
+Colors are specified in RGBA hexadecimal format: `0xRRGGBBAA`
+
+- `RR` - Red component (00-FF)
+- `GG` - Green component (00-FF)
+- `BB` - Blue component (00-FF)
+- `AA` - Alpha/opacity (00=transparent, FF=opaque)
+
+**Example:** `0xc9b890ff` = RGB(201, 184, 144) with full opacity

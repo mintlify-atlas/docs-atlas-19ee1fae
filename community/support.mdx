@@ -1,0 +1,213 @@
+---
+title: Getting Support
+description: How to get help with Mango Wayland Compositor
+---
+
+## Support Channels
+
+There are several ways to get help with Mango Wayland Compositor:
+
+## Discord Community
+
+Join the official Mango Discord server for:
+
+- Real-time chat with other users
+- Quick questions and answers
+- Configuration sharing
+- Community support
+- Development discussions
+
+<Card title="Join mangowm Discord" icon="discord" href="https://discord.gg/CPjbDxesh5">
+  Connect with the Mango community on Discord
+</Card>
+
+## Documentation
+
+Before asking for help, check the available documentation:
+
+### Official Resources
+
+<CardGroup cols={2}>
+  <Card title="GitHub Wiki" icon="book" href="https://github.com/mangowm/mango/wiki/">
+    Comprehensive configuration documentation and guides
+  </Card>
+  <Card title="Documentation Site" icon="file-lines" href="https://mangowm.github.io/">
+    Official documentation website with detailed information
+  </Card>
+</CardGroup>
+
+### Example Configurations
+
+<CardGroup cols={2}>
+  <Card title="Daily Config" icon="laptop" href="https://github.com/DreamMaoMao/mango-config.git">
+    Full-featured daily driver configuration example
+  </Card>
+  <Card title="DMS Config" icon="desktop" href="https://github.com/DreamMaoMao/mango-config.git">
+    Minimal DMS shell configuration (branch: dms)
+  </Card>
+</CardGroup>
+
+## GitHub Issues
+
+For bug reports and feature requests, use the GitHub issue tracker:
+
+### Bug Reports
+
+When reporting a bug, include:
+
+1. **System Information**
+   - Distribution and version
+   - Mango version
+   - wlroots version
+   - scenefx version
+
+2. **Hardware Details**
+   - GPU model and manufacturer
+   - Driver version
+   - Any GPU-related issues are particularly important
+
+3. **Reproduction Steps**
+   - What you were doing when the issue occurred
+   - Minimal steps to reproduce
+   - Expected behavior vs actual behavior
+
+4. **Logs and Errors**
+   - Relevant error messages
+   - Mango logs
+   - Crash dumps if applicable
+
+5. **Configuration**
+   - Relevant parts of your config file
+   - Any custom modifications
+
+### Feature Requests
+
+When requesting features:
+
+1. **Search First** - Check if a similar request already exists and upvote it
+2. **Explain the Use Case** - How does this feature help with daily workflows?
+3. **Align with Vision** - Consider Mango's focus on stability and practicality
+4. **Community Support** - Niche features need community upvotes to be considered
+
+<Note>
+Mango's primary goal is stability, with a preference for practical features that help with daily workflows. Niche feature requests will only be considered if they receive significant community support through upvotes.
+</Note>
+
+## Installation Issues
+
+If you encounter installation problems:
+
+### Check Distribution Packages
+
+Mango is available in several distributions:
+
+- **Arch Linux**: `yay -S mangowm-git`
+- **Gentoo**: GURU repository
+- **Fedora**: Terra repository
+- **Guix**: Channel available
+- **NixOS**: Flake with modules
+
+See the [Installation Guide](/installation/arch-linux) for detailed instructions.
+
+### Build Issues
+
+If building from source:
+
+1. Verify all dependencies are installed
+2. Check wlroots version (0.19.2 required)
+3. Check scenefx version (0.4.1 required)
+4. Review build output for specific errors
+
+### Packaging Issues
+
+If you're packaging Mango:
+
+1. Read your distribution's packaging documentation (RTFM)
+2. Check [reference implementations](/community/packaging)
+3. Create a GitHub issue with build logs
+
+## Configuration Help
+
+For configuration questions:
+
+1. **Review Documentation**
+   - Check the [wiki](https://github.com/mangowm/mango/wiki/)
+   - Review example configurations
+
+2. **Ask on Discord**
+   - Quick configuration questions
+   - Share your config for review
+   - Get advice from experienced users
+
+3. **Study Examples**
+   - Look at community dotfiles
+   - See how others solved similar problems
+
+## Performance Issues
+
+For performance problems:
+
+1. **GPU Compatibility**
+   - Aside from a few lingering GPU compatibility issues, Mango should be stable
+   - Report GPU-specific issues with hardware details
+
+2. **Configuration Review**
+   - Check if animations or effects are causing issues
+   - Review resource-intensive settings
+
+3. **System Resources**
+   - Mango is lightweight by design
+   - Check other running processes
+
+## Common Issues
+
+### XWayland Applications
+
+Mango provides excellent XWayland support. If you have issues with X11 applications:
+
+- Ensure xorg-xwayland is installed
+- Check XWayland-specific settings
+
+### Input Methods
+
+Mango has excellent input method support (text input v2/v3):
+
+- Configure your input method daemon
+- Check text-input protocol support
+
+### Window Effects
+
+Window effects (blur, shadow, corner radius, opacity) require scenefx:
+
+- Verify scenefx 0.4.1 is installed
+- Check GPU driver compatibility
+- Review effect configuration
+
+## Response Time
+
+- **Discord**: Usually fastest for quick questions
+- **GitHub Issues**: May take longer but provides permanent record
+- **Community**: Active users often help each other
+
+## Self-Help Checklist
+
+Before asking for help:
+
+- [ ] Read relevant documentation
+- [ ] Search existing issues
+- [ ] Check example configurations
+- [ ] Verify all dependencies are installed
+- [ ] Review error messages carefully
+- [ ] Try with default configuration
+- [ ] Update to latest version
+
+## Contributing Back
+
+Once you solve your issue:
+
+- Share your solution on Discord
+- Update documentation if information was missing
+- Help others with similar problems
+- Consider contributing to the project
+
+See the [Contributing Guide](/community/contributing) for more information.

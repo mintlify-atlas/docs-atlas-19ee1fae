@@ -1,0 +1,255 @@
+---
+title: Tag-Based Workspaces
+description: Understanding Mango's dwm-style tag system for powerful workspace management
+---
+
+## Overview
+
+Mango uses a **tag-based workspace system** inspired by dwm, offering more flexibility than traditional workspace models. Instead of windows belonging to a single workspace, each window can be assigned to one or multiple tags simultaneously.
+
+## How Tags Work
+
+### Tag Basics
+
+By default, Mango provides **9 tags** (numbered 1-9). Think of tags as labels you can apply to windows:
+
+- Each window can have **multiple tags** assigned to it
+- You can view one or more tags at a time
+- Windows are visible when at least one of their tags matches the currently active tags
+
+<Note>
+  The tag system is implemented as a bitmask (`TAGMASK`), where each tag corresponds to a bit. This allows efficient operations and multiple tag assignments.
+</Note>
+
+### Tag vs. Traditional Workspaces
+
+| Traditional Workspaces | Tag System |
+|------------------------|------------|
+| Window belongs to one workspace | Window can have multiple tags |
+| Switch between workspaces | Switch between tag views |
+| Moving window changes its workspace | Add/remove tags from window |
+| Linear navigation | Flexible tag combinations |
+
+## Configuring Tags
+
+Each tag can have its own layout and settings defined in `config.conf`:
+
+```conf
+# Assign default layouts to tags
+tagrule=id:1,layout_name:tile
+tagrule=id:2,layout_name:tile
+tagrule=id:3,layout_name:scroller
+tagrule=id:4,layout_name:grid
+tagrule=id:5,layout_name:tile
+tagrule=id:6,layout_name:tile
+tagrule=id:7,layout_name:tile
+tagrule=id:8,layout_name:tile
+tagrule=id:9,layout_name:monocle
+```
+
+## Working with Tags
+
+### Viewing Tags
+
+Switch to a specific tag:
+
+```conf
+# View tag 1-9
+bind=Ctrl,1,view,1,0
+bind=Ctrl,2,view,2,0
+bind=Ctrl,3,view,3,0
+# ... and so on
+```
+
+Navigate between tags:
+
+```conf
+# Move to previous/next tag
+bind=SUPER,Left,viewtoleft,0
+bind=SUPER,Right,viewtoright,0
+
+# Jump to previous/next tag that has windows
+bind=CTRL,Left,viewtoleft_have_client,0
+bind=CTRL,Right,viewtoright_have_client,0
+```
+
+### Moving Windows to Tags
+
+Assign windows to tags using the `tag` or `tagsilent` actions:
+
+```conf
+# Move window to tag and follow it (focus)
+bind=Alt,1,tag,1,0
+bind=Alt,2,tag,2,0
+
+# Move window to tag without focusing (silent)
+# bind=Alt,1,tagsilent,1
+
+# Move window to adjacent tags
+bind=CTRL+SUPER,Left,tagtoleft,0
+bind=CTRL+SUPER,Right,tagtoright,0
+```
+
+<Info>
+  The `tag` action moves the window and focuses it, while `tagsilent` moves the window without changing your current view.
+</Info>
+
+### Multi-Monitor Tag Management
+
+Move windows between monitors while preserving tags:
+
+```conf
+# Focus adjacent monitor
+bind=alt+shift,Left,focusmon,left
+bind=alt+shift,Right,focusmon,right
+
+# Move window to adjacent monitor
+bind=SUPER+Alt,Left,tagmon,left
+bind=SUPER+Alt,Right,tagmon,right
+```
+
+## Per-Tag Settings
+
+Mango maintains per-tag settings using the `Pertag` structure. Each tag remembers:
+
+- **Layout**: The arrangement algorithm (tile, grid, scroller, etc.)
+- **Master count** (`nmaster`): Number of windows in the master area
+- **Master factor** (`mfact`): Size ratio between master and stack areas
+- **Visibility settings**: Border rendering, gaps behavior
+
+### Tag State Management
+
+The compositor tracks:
+
+```c
+// Current and previous tag for quick switching
+uint32_t curtag, prevtag;
+
+// Per-tag master window count
+int32_t nmasters[LENGTH(tags) + 1];
+
+// Per-tag master area ratio
+float mfacts[LENGTH(tags) + 1];
+
+// Per-tag layout selection
+const Layout *ltidxs[LENGTH(tags) + 1];
+```
+
+## Tag-Related Window Rules
+
+Automate tag assignments in window rules:
+
+```conf
+# Example: Automatically assign Firefox to tag 2
+windowrule=appid:firefox,tags:2
+
+# Assign to multiple tags (use bitmask)
+windowrule=appid:music,tags:256  # Tag 9 only
+```
+
+## Tag Animations
+
+When switching tags, windows animate in and out:
+
+```conf
+# Configure tag switch animation
+animation_duration_tag=350
+animation_curve_tag=0.46,1.0,0.29,1
+tag_animation_direction=1  # 1=horizontal, 0=vertical
+```
+
+The animation system handles:
+- **Slide in**: Windows entering the view (`tagining`)
+- **Slide out**: Windows leaving the view (`tagouting`)
+- **Direction**: Based on `tag_animation_direction` setting
+
+## Special Tag States
+
+### Global Windows
+
+Windows with the `isglobal` flag appear on **all tags**:
+
+```conf
+bind=SUPER,g,toggleglobal,
+```
+
+Global windows:
+- Are visible regardless of the current tag
+- Automatically update their tags when you switch views
+- Useful for persistent overlays or monitoring tools
+
+### Unglobal Windows
+
+Windows with `isunglobal` are temporarily removed from normal tag visibility without being minimized.
+
+## Implementation Details
+
+### Tag Bitmask System
+
+Tags are implemented as bit flags:
+
+```c
+#define TAGMASK ((1 << LENGTH(tags)) - 1)
+
+// Example: Window on tags 1 and 3
+window->tags = (1 << 0) | (1 << 2);  // Binary: 0b00000101
+
+// Check if window is visible on current tag
+if (window->tags & monitor->tagset[monitor->seltags])
+    // Window is visible
+```
+
+### Tag Switching Logic
+
+The `view()` function handles tag switching:
+
+1. Store current tag as previous tag
+2. Toggle the tagset selection
+3. Update monitor's active tagset
+4. Trigger arrange to update layout
+5. Animate windows in/out based on visibility
+
+## Best Practices
+
+<Card title="Tag Organization" icon="tags">
+  Organize tags by purpose:
+  - **Tag 1**: General/browsing
+  - **Tag 2**: Development
+  - **Tag 3**: Communication
+  - **Tag 4**: Media
+  - **Tags 5-9**: Project-specific
+</Card>
+
+<Card title="Multi-Tag Workflow" icon="layer-group">
+  Use multi-tag assignments for:
+  - Reference windows (documentation)
+  - Monitoring tools
+  - Chat/communication apps
+  - Music players
+</Card>
+
+## Common Patterns
+
+### Quick Tag Switching
+
+```conf
+# Use Ctrl+Number for quick tag access
+bind=Ctrl,1,view,1,0
+bind=Ctrl,2,view,2,0
+```
+
+### Workflow-Based Tags
+
+```conf
+# Organize by activity type
+tagrule=id:1,layout_name:tile        # Coding
+tagrule=id:2,layout_name:monocle     # Focus work
+tagrule=id:3,layout_name:grid        # Multitasking
+tagrule=id:4,layout_name:scroller    # Research/reading
+```
+
+## Related Concepts
+
+- [Layouts](/concepts/layouts) - How windows are arranged within each tag
+- [Window States](/concepts/window-states) - Special window modes that interact with tags
+- [Animations](/concepts/animations) - Tag switching animation behavior

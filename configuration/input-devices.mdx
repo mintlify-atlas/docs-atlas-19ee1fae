@@ -1,0 +1,399 @@
+---
+title: Input Devices
+description: Configure keyboard, mouse, and trackpad settings in Mango
+---
+
+## Keyboard Settings
+
+### Key Repeat
+
+<ParamField path="repeat_rate" type="integer" default="25">
+  Number of key repeats per second when a key is held down
+  
+  ```conf
+  repeat_rate=25
+  ```
+</ParamField>
+
+<ParamField path="repeat_delay" type="integer" default="600">
+  Delay in milliseconds before key repeat starts
+  
+  ```conf
+  repeat_delay=600
+  ```
+</ParamField>
+
+### Keyboard Layout
+
+<ParamField path="xkb_rules_layout" type="string" default="us">
+  Keyboard layout using XKB rules
+  
+  Common layouts:
+  - `us` - US English
+  - `gb` - UK English
+  - `de` - German
+  - `fr` - French
+  - `es` - Spanish
+  - `us,ru` - Multiple layouts (US and Russian)
+  
+  ```conf
+  xkb_rules_layout=us
+  ```
+</ParamField>
+
+### Num Lock
+
+<ParamField path="numlockon" type="boolean" default="0">
+  Enable Num Lock on startup
+  
+  - `1` - Num Lock on at startup
+  - `0` - Num Lock off at startup
+  
+  ```conf
+  numlockon=0
+  ```
+</ParamField>
+
+### Keyboard Examples
+
+```conf
+# Fast key repeat
+repeat_rate=35
+repeat_delay=300
+
+# Dual layout (US and German)
+xkb_rules_layout=us,de
+
+# Enable Num Lock
+numlockon=1
+```
+
+## Mouse Settings
+
+<Note>
+Mouse settings require logging out and back in to take effect.
+</Note>
+
+<ParamField path="mouse_natural_scrolling" type="boolean" default="0">
+  Enable natural (reversed) scrolling for mouse
+  
+  - `1` - Natural scrolling (content moves with scroll direction)
+  - `0` - Traditional scrolling
+  
+  ```conf
+  mouse_natural_scrolling=0
+  ```
+</ParamField>
+
+## Trackpad Settings
+
+<Note>
+Trackpad settings require logging out and back in to take effect.
+</Note>
+
+### Basic Trackpad Settings
+
+<ParamField path="disable_trackpad" type="boolean" default="0">
+  Disable trackpad completely
+  
+  ```conf
+  disable_trackpad=0
+  ```
+</ParamField>
+
+<ParamField path="tap_to_click" type="boolean" default="1">
+  Enable tap-to-click on trackpad
+  
+  ```conf
+  tap_to_click=1
+  ```
+</ParamField>
+
+<ParamField path="tap_and_drag" type="boolean" default="1">
+  Enable tap-and-drag gesture
+  
+  ```conf
+  tap_and_drag=1
+  ```
+</ParamField>
+
+<ParamField path="drag_lock" type="boolean" default="1">
+  Enable drag lock (continue dragging after lifting finger)
+  
+  ```conf
+  drag_lock=1
+  ```
+</ParamField>
+
+### Trackpad Scrolling
+
+<ParamField path="trackpad_natural_scrolling" type="boolean" default="0">
+  Enable natural (reversed) scrolling for trackpad
+  
+  - `1` - Natural scrolling (content moves with finger direction)
+  - `0` - Traditional scrolling
+  
+  ```conf
+  trackpad_natural_scrolling=0
+  ```
+</ParamField>
+
+### Typing and Gestures
+
+<ParamField path="disable_while_typing" type="boolean" default="1">
+  Disable trackpad while typing to prevent accidental touches
+  
+  ```conf
+  disable_while_typing=1
+  ```
+</ParamField>
+
+<ParamField path="swipe_min_threshold" type="integer" default="1">
+  Minimum distance threshold for swipe gestures
+  
+  ```conf
+  swipe_min_threshold=1
+  ```
+</ParamField>
+
+### Hand Orientation
+
+<ParamField path="left_handed" type="boolean" default="0">
+  Swap left and right button behavior for left-handed use
+  
+  ```conf
+  left_handed=0
+  ```
+</ParamField>
+
+### Button Emulation
+
+<ParamField path="middle_button_emulation" type="boolean" default="0">
+  Enable middle button emulation (click left + right buttons simultaneously)
+  
+  ```conf
+  middle_button_emulation=0
+  ```
+</ParamField>
+
+### Complete Trackpad Configuration
+
+```conf
+# Basic settings
+disable_trackpad=0
+tap_to_click=1
+tap_and_drag=1
+drag_lock=1
+
+# Scrolling
+trackpad_natural_scrolling=0
+
+# Typing protection
+disable_while_typing=1
+
+# Gestures
+swipe_min_threshold=1
+
+# Orientation
+left_handed=0
+
+# Button emulation
+middle_button_emulation=0
+```
+
+## Focus and Cursor Behavior
+
+### Focus Settings
+
+<ParamField path="sloppyfocus" type="boolean" default="1">
+  Enable sloppy focus (focus follows mouse without clicking)
+  
+  - `1` - Focus follows mouse
+  - `0` - Click to focus
+  
+  ```conf
+  sloppyfocus=1
+  ```
+</ParamField>
+
+<ParamField path="warpcursor" type="boolean" default="1">
+  Warp cursor to focused window
+  
+  ```conf
+  warpcursor=1
+  ```
+</ParamField>
+
+<ParamField path="focus_on_activate" type="boolean" default="1">
+  Focus windows when they request activation
+  
+  ```conf
+  focus_on_activate=1
+  ```
+</ParamField>
+
+<ParamField path="focus_cross_monitor" type="boolean" default="0">
+  Allow focus to move across monitors automatically
+  
+  ```conf
+  focus_cross_monitor=0
+  ```
+</ParamField>
+
+<ParamField path="focus_cross_tag" type="boolean" default="0">
+  Allow focus to switch tags automatically
+  
+  ```conf
+  focus_cross_tag=0
+  ```
+</ParamField>
+
+## Floating Window Behavior
+
+<ParamField path="enable_floating_snap" type="boolean" default="0">
+  Enable snapping for floating windows
+  
+  ```conf
+  enable_floating_snap=0
+  ```
+</ParamField>
+
+<ParamField path="snap_distance" type="integer" default="30">
+  Distance in pixels for window snapping
+  
+  ```conf
+  snap_distance=30
+  ```
+</ParamField>
+
+<ParamField path="drag_tile_to_tile" type="boolean" default="1">
+  Allow dragging tiled windows to swap positions
+  
+  ```conf
+  drag_tile_to_tile=1
+  ```
+</ParamField>
+
+## Idle Inhibition
+
+<ParamField path="idleinhibit_ignore_visible" type="boolean" default="0">
+  Ignore idle inhibitors from visible windows
+  
+  Idle inhibitors prevent screen blanking/sleep (e.g., video players)
+  
+  ```conf
+  idleinhibit_ignore_visible=0
+  ```
+</ParamField>
+
+## Example Configurations
+
+### Laptop User (Natural Scrolling)
+
+```conf
+# Keyboard
+repeat_rate=25
+repeat_delay=600
+xkb_rules_layout=us
+numlockon=0
+
+# Trackpad
+disable_trackpad=0
+tap_to_click=1
+tap_and_drag=1
+trackpad_natural_scrolling=1
+disable_while_typing=1
+
+# Focus
+sloppyfocus=1
+warpcursor=1
+```
+
+### Desktop User (External Mouse)
+
+```conf
+# Keyboard
+repeat_rate=30
+repeat_delay=400
+xkb_rules_layout=us
+numlockon=1
+
+# Mouse
+mouse_natural_scrolling=0
+
+# Disable trackpad
+disable_trackpad=1
+
+# Focus
+sloppyfocus=0
+warpcursor=0
+focus_on_activate=1
+```
+
+### Programmer (Fast Keyboard)
+
+```conf
+# Fast key repeat for navigation
+repeat_rate=50
+repeat_delay=200
+
+# Multiple layouts
+xkb_rules_layout=us,ru
+
+# Precise focus control
+sloppyfocus=0
+warpcursor=0
+focus_cross_monitor=0
+focus_cross_tag=0
+```
+
+### Left-Handed User
+
+```conf
+# Trackpad
+left_handed=1
+tap_to_click=1
+tap_and_drag=1
+
+# Mouse bindings should also be adjusted
+# See keybindings configuration
+```
+
+## Finding Key Names
+
+To configure keyboard layouts and key bindings, you may need to find key names:
+
+### Using `wev` (Wayland)
+
+```bash
+wev
+```
+
+### Using `xev` (X11)
+
+```bash
+xev
+```
+
+Press keys and look for their names in the output.
+
+## XKB Layout Options
+
+For advanced keyboard configuration, you can combine layouts with options:
+
+```conf
+# Multiple layouts with Caps Lock as Ctrl
+xkb_rules_layout=us,de
+# Note: Mango may support additional xkb options in future versions
+```
+
+Common XKB layouts:
+- `us` - US English
+- `gb` - UK English  
+- `de` - German
+- `fr` - French
+- `es` - Spanish
+- `ru` - Russian
+- `jp` - Japanese
+- `cn` - Chinese
+- `kr` - Korean

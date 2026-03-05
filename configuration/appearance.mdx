@@ -1,0 +1,332 @@
+---
+title: Appearance
+description: Configure colors, gaps, borders, and visual styling in Mango
+---
+
+## Colors
+
+Mango uses hexadecimal RGBA color format: `0xRRGGBBAA`
+
+### Border Colors
+
+<ParamField path="bordercolor" type="color" default="0x444444ff">
+  Default border color for unfocused windows
+  
+  ```conf
+  bordercolor=0x444444ff
+  ```
+</ParamField>
+
+<ParamField path="focuscolor" type="color" default="0xc9b890ff">
+  Border color for the focused window
+  
+  ```conf
+  focuscolor=0xc9b890ff
+  ```
+</ParamField>
+
+<ParamField path="urgentcolor" type="color" default="0xad401fff">
+  Border color for windows requesting attention
+  
+  ```conf
+  urgentcolor=0xad401fff
+  ```
+</ParamField>
+
+### Special State Colors
+
+<ParamField path="maximizescreencolor" type="color" default="0x89aa61ff">
+  Border color for maximized windows
+  
+  ```conf
+  maximizescreencolor=0x89aa61ff
+  ```
+</ParamField>
+
+<ParamField path="scratchpadcolor" type="color" default="0x516c93ff">
+  Border color for scratchpad windows
+  
+  ```conf
+  scratchpadcolor=0x516c93ff
+  ```
+</ParamField>
+
+<ParamField path="globalcolor" type="color" default="0xb153a7ff">
+  Border color for global windows (visible on all tags)
+  
+  ```conf
+  globalcolor=0xb153a7ff
+  ```
+</ParamField>
+
+<ParamField path="overlaycolor" type="color" default="0x14a57cff">
+  Border color for overlay windows
+  
+  ```conf
+  overlaycolor=0x14a57cff
+  ```
+</ParamField>
+
+### Background Color
+
+<ParamField path="rootcolor" type="color" default="0x201b14ff">
+  Background color for the desktop
+  
+  ```conf
+  rootcolor=0x201b14ff
+  ```
+</ParamField>
+
+## Borders
+
+<ParamField path="borderpx" type="integer" default="4">
+  Border width in pixels
+  
+  ```conf
+  borderpx=4
+  ```
+</ParamField>
+
+<ParamField path="no_border_when_single" type="boolean" default="0">
+  Hide borders when only one window is visible
+  
+  - `1` - Hide border when single window
+  - `0` - Always show borders
+  
+  ```conf
+  no_border_when_single=0
+  ```
+</ParamField>
+
+## Gaps
+
+Mango supports separate inner and outer gaps:
+
+### Inner Gaps
+
+Space between windows:
+
+<ParamField path="gappih" type="integer" default="5">
+  Inner horizontal gap in pixels
+  
+  ```conf
+  gappih=5
+  ```
+</ParamField>
+
+<ParamField path="gappiv" type="integer" default="5">
+  Inner vertical gap in pixels
+  
+  ```conf
+  gappiv=5
+  ```
+</ParamField>
+
+### Outer Gaps
+
+Space between windows and screen edges:
+
+<ParamField path="gappoh" type="integer" default="10">
+  Outer horizontal gap in pixels
+  
+  ```conf
+  gappoh=10
+  ```
+</ParamField>
+
+<ParamField path="gappov" type="integer" default="10">
+  Outer vertical gap in pixels
+  
+  ```conf
+  gappov=10
+  ```
+</ParamField>
+
+### Smart Gaps
+
+<ParamField path="smartgaps" type="boolean" default="0">
+  Hide gaps when only one window is visible
+  
+  - `1` - Enable smart gaps
+  - `0` - Always show gaps
+  
+  ```conf
+  smartgaps=0
+  ```
+</ParamField>
+
+### Runtime Gap Control
+
+You can adjust gaps dynamically with keybindings:
+
+```conf
+# Increase all gaps by 1 pixel
+bind=ALT+SHIFT,X,incgaps,1
+
+# Decrease all gaps by 1 pixel
+bind=ALT+SHIFT,Z,incgaps,-1
+
+# Toggle gaps on/off
+bind=ALT+SHIFT,R,togglegaps
+```
+
+## Window Opacity
+
+<ParamField path="focused_opacity" type="float" default="1.0">
+  Opacity for focused windows (0.0 - 1.0)
+  
+  ```conf
+  focused_opacity=1.0
+  ```
+</ParamField>
+
+<ParamField path="unfocused_opacity" type="float" default="1.0">
+  Opacity for unfocused windows (0.0 - 1.0)
+  
+  ```conf
+  unfocused_opacity=1.0
+  ```
+</ParamField>
+
+## Overview Settings
+
+Appearance settings for overview mode:
+
+<ParamField path="overviewgappi" type="integer" default="5">
+  Inner gap between windows in overview mode
+  
+  ```conf
+  overviewgappi=5
+  ```
+</ParamField>
+
+<ParamField path="overviewgappo" type="integer" default="30">
+  Outer gap from screen edges in overview mode
+  
+  ```conf
+  overviewgappo=30
+  ```
+</ParamField>
+
+<ParamField path="ov_tab_mode" type="boolean" default="0">
+  Enable tab mode in overview
+  
+  ```conf
+  ov_tab_mode=0
+  ```
+</ParamField>
+
+<ParamField path="hotarea_size" type="integer" default="10">
+  Size of hot area for triggering overview in pixels
+  
+  ```conf
+  hotarea_size=10
+  ```
+</ParamField>
+
+<ParamField path="enable_hotarea" type="boolean" default="1">
+  Enable hot corner/area for overview
+  
+  ```conf
+  enable_hotarea=1
+  ```
+</ParamField>
+
+## Scratchpad Appearance
+
+<ParamField path="scratchpad_width_ratio" type="float" default="0.8">
+  Scratchpad width as ratio of screen width (0.0 - 1.0)
+  
+  ```conf
+  scratchpad_width_ratio=0.8
+  ```
+</ParamField>
+
+<ParamField path="scratchpad_height_ratio" type="float" default="0.9">
+  Scratchpad height as ratio of screen height (0.0 - 1.0)
+  
+  ```conf
+  scratchpad_height_ratio=0.9
+  ```
+</ParamField>
+
+## Cursor Settings
+
+<ParamField path="cursor_size" type="integer" default="24">
+  Cursor size in pixels
+  
+  ```conf
+  cursor_size=24
+  ```
+</ParamField>
+
+## Example Configuration
+
+Here's a complete appearance configuration example:
+
+```conf
+# Colors
+rootcolor=0x201b14ff
+bordercolor=0x444444ff
+focuscolor=0xc9b890ff
+maximizescreencolor=0x89aa61ff
+urgentcolor=0xad401fff
+scratchpadcolor=0x516c93ff
+globalcolor=0xb153a7ff
+overlaycolor=0x14a57cff
+
+# Borders
+borderpx=4
+no_border_when_single=0
+
+# Gaps
+gappih=5
+gappiv=5
+gappoh=10
+gappov=10
+smartgaps=0
+
+# Opacity
+focused_opacity=1.0
+unfocused_opacity=1.0
+
+# Overview
+hotarea_size=10
+enable_hotarea=1
+ov_tab_mode=0
+overviewgappi=5
+overviewgappo=30
+
+# Scratchpad
+scratchpad_width_ratio=0.8
+scratchpad_height_ratio=0.9
+
+# Cursor
+cursor_size=24
+```
+
+## Color Examples
+
+### Material Design Colors
+
+```conf
+focuscolor=0x2196F3ff     # Blue
+urgentcolor=0xF44336ff    # Red
+scratchpadcolor=0x4CAF50ff # Green
+```
+
+### Pastel Theme
+
+```conf
+focuscolor=0xFFB6C1ff     # Light pink
+bordercolor=0xE6E6FAff    # Lavender
+rootcolor=0xFFF8DCff      # Cornsilk
+```
+
+### Dark Theme
+
+```conf
+rootcolor=0x1a1a1aff      # Very dark gray
+bordercolor=0x333333ff    # Dark gray
+focuscolor=0x666666ff     # Medium gray
+```

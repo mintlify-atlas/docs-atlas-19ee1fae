@@ -1,0 +1,330 @@
+---
+title: Rules
+description: Configure tag rules and layer rules for specific behaviors in Mango
+---
+
+## Tag Rules
+
+Tag rules allow you to configure per-tag (workspace) settings like default layouts.
+
+### Syntax
+
+```conf
+tagrule=property:value,property:value,...
+```
+
+### Available Properties
+
+<ParamField path="id" type="integer" required>
+  Tag ID (1-9)
+  
+  ```conf
+  tagrule=id:1,layout_name:tile
+  ```
+</ParamField>
+
+<ParamField path="layout_name" type="enum" required>
+  Default layout for the tag
+  
+  Available layouts:
+  - `tile` - Master-stack tiling
+  - `scroller` - Horizontal scrolling layout
+  - `grid` - Grid layout
+  - `deck` - Single window deck
+  - `monocle` - Fullscreen single window
+  - `center_tile` - Centered master with stacks
+  - `vertical_tile` - Vertical master-stack
+  - `vertical_scroller` - Vertical scrolling layout
+  
+  ```conf
+  tagrule=id:1,layout_name:tile
+  ```
+</ParamField>
+
+### Tag Rule Examples
+
+```conf
+# Tag 1: Traditional tiling
+tagrule=id:1,layout_name:tile
+
+# Tag 2: Scroller layout for browsers
+tagrule=id:2,layout_name:scroller
+
+# Tag 3: Grid layout for multiple windows
+tagrule=id:3,layout_name:grid
+
+# Tag 4: Monocle for focused work
+tagrule=id:4,layout_name:monocle
+
+# Tag 5-9: More layouts
+tagrule=id:5,layout_name:deck
+tagrule=id:6,layout_name:center_tile
+tagrule=id:7,layout_name:vertical_tile
+tagrule=id:8,layout_name:vertical_scroller
+tagrule=id:9,layout_name:tile
+```
+
+### Default Configuration
+
+```conf
+tagrule=id:1,layout_name:tile
+tagrule=id:2,layout_name:tile
+tagrule=id:3,layout_name:tile
+tagrule=id:4,layout_name:tile
+tagrule=id:5,layout_name:tile
+tagrule=id:6,layout_name:tile
+tagrule=id:7,layout_name:tile
+tagrule=id:8,layout_name:tile
+tagrule=id:9,layout_name:tile
+```
+
+## Layer Rules
+
+Layer rules allow you to configure behavior for specific layer surfaces (overlays, panels, application launchers, etc.).
+
+### Syntax
+
+```conf
+layerrule=property:value,layer_name:name
+```
+
+### Available Properties
+
+<ParamField path="animation_type_open" type="enum">
+  Override animation type when opening the layer
+  
+  Values: `slide`, `zoom`
+  
+  ```conf
+  layerrule=animation_type_open:zoom,layer_name:rofi
+  ```
+</ParamField>
+
+<ParamField path="animation_type_close" type="enum">
+  Override animation type when closing the layer
+  
+  Values: `slide`, `zoom`
+  
+  ```conf
+  layerrule=animation_type_close:zoom,layer_name:rofi
+  ```
+</ParamField>
+
+<ParamField path="layer_name" type="string" required>
+  Name of the layer surface to target
+  
+  Common layer names:
+  - `rofi` - Rofi application launcher
+  - `waybar` - Waybar status bar
+  - `mako` - Mako notification daemon
+  - Application-specific names
+  
+  ```conf
+  layerrule=animation_type_open:zoom,layer_name:rofi
+  ```
+</ParamField>
+
+### Layer Rule Examples
+
+```conf
+# Rofi launcher with zoom animation
+layerrule=animation_type_open:zoom,layer_name:rofi
+layerrule=animation_type_close:zoom,layer_name:rofi
+
+# Waybar with slide animation
+layerrule=animation_type_open:slide,layer_name:waybar
+layerrule=animation_type_close:slide,layer_name:waybar
+
+# Notification daemon
+layerrule=animation_type_open:slide,layer_name:mako
+layerrule=animation_type_close:slide,layer_name:mako
+```
+
+### Finding Layer Names
+
+To find the layer name of an application:
+
+1. Check the application's Wayland implementation (usually in documentation)
+2. Use compositor debugging tools
+3. Look at the application's source code for layer-shell implementation
+
+Common applications and their layer names:
+
+| Application | Layer Name |
+|-------------|------------|
+| Rofi | `rofi` |
+| Waybar | `waybar` |
+| Mako | `mako` |
+| Dunst | `dunst` |
+| Swaylock | `swaylock` |
+
+## Layout Descriptions
+
+### Tile
+
+Traditional master-stack layout. One or more master windows on the left, stack on the right.
+
+**Layout-specific settings:**
+
+```conf
+# New windows become master
+new_is_master=1
+
+# Master area takes 55% of width
+default_mfact=0.55
+
+# Number of windows in master area
+default_nmaster=1
+```
+
+### Scroller
+
+Horizontal scrolling layout where windows are arranged side-by-side.
+
+**Layout-specific settings:**
+
+```conf
+# Number of visible windows
+scroller_structs=20
+
+# Default window width ratio
+scroller_default_proportion=0.8
+
+# Center focused window
+scroller_focus_center=0
+
+# Prefer centered positioning
+scroller_prefer_center=0
+
+# Focus window under pointer at screen edge
+edge_scroller_pointer_focus=1
+
+# Single window proportion
+scroller_default_proportion_single=1.0
+
+# Preset proportions
+scroller_proportion_preset=0.5,0.8,1.0
+```
+
+### Grid
+
+Arranges windows in a grid pattern.
+
+### Deck
+
+Stacks windows like a deck of cards, showing only the top window.
+
+### Monocle
+
+Maximizes a single window at a time.
+
+### Center Tile
+
+Centered master area with stack windows on both sides.
+
+### Vertical Tile
+
+Master-stack layout with vertical split (master on top).
+
+### Vertical Scroller
+
+Vertical scrolling layout where windows are stacked vertically.
+
+## Layout-Specific Configuration
+
+### Master-Stack Layouts
+
+```conf
+# New windows become master (applies to tile, vertical_tile, center_tile)
+new_is_master=1
+
+# Master area fraction (0.0 - 1.0)
+default_mfact=0.55
+
+# Number of master windows
+default_nmaster=1
+
+# Hide gaps when single window
+smartgaps=0
+```
+
+### Scroller Layouts
+
+```conf
+# Scroller structure settings
+scroller_structs=20
+scroller_default_proportion=0.8
+scroller_focus_center=0
+scroller_prefer_center=0
+edge_scroller_pointer_focus=1
+scroller_default_proportion_single=1.0
+scroller_proportion_preset=0.5,0.8,1.0
+```
+
+### Keybindings for Scroller
+
+```conf
+# Set proportion to 1.0 (full width)
+bind=ALT,e,set_proportion,1.0
+
+# Cycle through proportion presets
+bind=ALT,x,switch_proportion_preset,
+```
+
+## Complete Rules Example
+
+```conf
+# Tag rules - different layouts for different workflows
+tagrule=id:1,layout_name:tile              # General work
+tagrule=id:2,layout_name:scroller          # Browsing
+tagrule=id:3,layout_name:grid              # Monitoring
+tagrule=id:4,layout_name:monocle           # Focus
+tagrule=id:5,layout_name:tile              # Development
+tagrule=id:6,layout_name:center_tile       # Writing
+tagrule=id:7,layout_name:vertical_scroller # Terminals
+tagrule=id:8,layout_name:deck              # Media
+tagrule=id:9,layout_name:tile              # Misc
+
+# Layer rules - custom animations for different surfaces
+layerrule=animation_type_open:zoom,layer_name:rofi
+layerrule=animation_type_close:zoom,layer_name:rofi
+layerrule=animation_type_open:slide,layer_name:waybar
+layerrule=animation_type_close:slide,layer_name:waybar
+
+# Master-stack settings
+new_is_master=1
+default_mfact=0.55
+default_nmaster=1
+smartgaps=0
+
+# Scroller settings
+scroller_structs=20
+scroller_default_proportion=0.8
+scroller_focus_center=0
+scroller_prefer_center=0
+edge_scroller_pointer_focus=1
+scroller_default_proportion_single=1.0
+scroller_proportion_preset=0.5,0.8,1.0
+```
+
+## Switching Layouts
+
+You can switch layouts at runtime:
+
+```conf
+# Cycle through available layouts
+bind=SUPER,n,switch_layout
+```
+
+This keybinding cycles through all available layouts for the current tag.
+
+## Future Rule Types
+
+<Note>
+Mango may support additional rule types in future versions, such as:
+- Window rules based on app_id or title
+- Monitor-specific rules
+- Per-window opacity and blur settings
+</Note>
+
+Check the [Mango Wiki](https://github.com/DreamMaoMao/mango/wiki/) for updates on new rule types.

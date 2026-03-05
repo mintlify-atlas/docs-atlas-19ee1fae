@@ -1,97 +1,134 @@
 ---
-title: "Introduction"
-description: "Welcome to the new home for your documentation"
+title: "Mango Wayland Compositor"
+description: "Practical and powerful Wayland compositor with smooth animations, flexible layouts, and rich window management features"
 ---
 
-## Setting up
+<div style={{
+  background: 'linear-gradient(135deg, #fbb120 0%, #d4e04c 100%)',
+  padding: '3rem 2rem',
+  borderRadius: '12px',
+  marginBottom: '2rem',
+  textAlign: 'center'
+}}>
+  <h1 style={{
+    fontSize: '48px',
+    fontWeight: '700',
+    color: '#0A0A0A',
+    marginBottom: '1rem'
+  }}>Mango</h1>
+  <p style={{
+    fontSize: '24px',
+    fontWeight: '700',
+    color: '#0A0A0A',
+    marginBottom: '0'
+  }}>Practical and Powerful Wayland Compositor</p>
+</div>
 
-Get your documentation site up and running in minutes.
+Mango is a lightweight, feature-rich Wayland compositor inspired by dwm. It combines the minimalist philosophy of tiling window managers with modern Wayland features like smooth animations, window effects, and zero-flicker rendering.
 
-<Card
-  title="Start here"
-  icon="rocket"
-  href="/quickstart"
-  horizontal
->
-  Follow our three step quickstart guide.
-</Card>
+## Get Started
 
-## Make it yours
-
-Design a docs site that looks great and empowers your users.
-
-<Columns cols={2}>
-  <Card
-    title="Edit locally"
-    icon="pen-to-square"
-    href="/development"
-  >
-    Edit your docs locally and preview them in real time.
+<CardGroup cols={2}>
+  <Card title="Quickstart Guide" icon="rocket" href="/quickstart">
+    Get Mango running in minutes
   </Card>
-  <Card
-    title="Customize your site"
-    icon="palette"
-    href="/essentials/settings"
-  >
-    Customize the design and colors of your site to match your brand.
+  <Card title="Installation" icon="download" href="/installation/arch-linux">
+    Install on your distribution
   </Card>
-    <Card
-    title="Set up navigation"
-    icon="map"
-    href="/essentials/navigation"
-  >
-    Organize your docs to help users find what they need and succeed with your product.
+  <Card title="Configuration" icon="sliders" href="/configuration/overview">
+    Configure Mango to your needs
   </Card>
-  <Card
-    title="API documentation"
-    icon="terminal"
-    href="/api-reference/introduction"
-  >
-    Auto-generate API documentation from OpenAPI specifications.
+  <Card title="Key Bindings" icon="keyboard" href="/reference/keybindings">
+    Learn the default keybindings
   </Card>
-</Columns>
+</CardGroup>
 
-## Create beautiful pages
+## Key Features
 
-Everything you need to create world-class documentation.
+<CardGroup cols={2}>
+  <Card title="Tag-Based Workspaces" icon="tags">
+    Use dwm-style tags instead of traditional workspaces, with per-tag layouts
+  </Card>
+  <Card title="10+ Window Layouts" icon="grid" href="/features/layouts">
+    Tile, scroller, monocle, grid, deck, and more layout options
+  </Card>
+  <Card title="Smooth Animations" icon="wand-magic-sparkles" href="/concepts/animations">
+    Customizable animations for window open/close, movement, and tag transitions
+  </Card>
+  <Card title="Window Effects" icon="sparkles" href="/features/window-effects">
+    Blur, shadows, corner radius, and opacity effects powered by scenefx
+  </Card>
+  <Card title="Scratchpad" icon="window-restore" href="/features/scratchpad">
+    Sway-like scratchpad with support for named scratchpads
+  </Card>
+  <Card title="Overview Mode" icon="table-cells-large" href="/features/overview-mode">
+    Hycov-like overview for quick window navigation
+  </Card>
+  <Card title="IPC Support" icon="plug" href="/features/ipc">
+    Control Mango via IPC using the mmsg tool
+  </Card>
+  <Card title="XWayland Support" icon="x" href="/features/xwayland">
+    Excellent support for X11 applications
+  </Card>
+</CardGroup>
 
-<Columns cols={2}>
-  <Card
-    title="Write with MDX"
-    icon="pen-fancy"
-    href="/essentials/markdown"
-  >
-    Use MDX to style your docs pages.
-  </Card>
-  <Card
-    title="Code samples"
-    icon="code"
-    href="/essentials/code"
-  >
-    Add sample code to demonstrate how to use your product.
-  </Card>
-  <Card
-    title="Images"
-    icon="image"
-    href="/essentials/images"
-  >
-    Display images and other media.
-  </Card>
-  <Card
-    title="Reusable snippets"
-    icon="recycle"
-    href="/essentials/reusable-snippets"
-  >
-    Write once and reuse across your docs.
-  </Card>
-</Columns>
+## Why Mango?
 
-## Need inspiration?
+<Accordion title="Lightweight & Fast">
+  Mango builds in seconds and stays lightweight without compromising on features. Built on top of wlroots, it provides a solid foundation for your desktop.
+</Accordion>
 
-<Card
-  title="See complete examples"
-  icon="stars"
-  href="https://mintlify.com/customers"
->
-  Browse our showcase of exceptional documentation sites.
-</Card>
+<Accordion title="Practical Features">
+  Every feature in Mango is designed to improve your workflow. From hot-reload configuration to rich window states, Mango focuses on what matters.
+</Accordion>
+
+<Accordion title="Zero Flickering">
+  Every frame is perfect. Mango ensures smooth, flicker-free rendering for a polished desktop experience.
+</Accordion>
+
+<Accordion title="Highly Configurable">
+  Configure every aspect through a simple text file. Change keybindings, animations, effects, and more—all with hot-reload support.
+</Accordion>
+
+## Quick Example
+
+Here's a sample configuration showing Mango's powerful features:
+
+```conf config.conf
+# Window effects
+blur=1
+shadows=1
+border_radius=6
+
+# Smooth animations
+animations=1
+animation_type_open=slide
+animation_duration_open=400
+
+# Tag-based layout
+tagrule=id:1,layout_name:tile
+tagrule=id:2,layout_name:scroller
+
+# Keybindings
+bind=Alt,Return,spawn,foot
+bind=Alt,space,spawn,rofi -show drun
+bind=Alt,q,killclient
+bind=SUPER,m,quit
+```
+
+## Community
+
+<CardGroup cols={2}>
+  <Card title="GitHub" icon="github" href="https://github.com/mangowm/mango">
+    Star us on GitHub and contribute
+  </Card>
+  <Card title="Discord" icon="discord" href="https://discord.gg/CPjbDxesh5">
+    Join our community on Discord
+  </Card>
+  <Card title="Contributing" icon="code-pull-request" href="/community/contributing">
+    Learn how to contribute
+  </Card>
+  <Card title="Support" icon="life-ring" href="/community/support">
+    Get help and support
+  </Card>
+</CardGroup>

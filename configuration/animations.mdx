@@ -1,0 +1,380 @@
+---
+title: Animations
+description: Configure animation types, durations, curves, and effects in Mango
+---
+
+## Animation Types
+
+Mango supports two primary animation types:
+
+- **slide** - Windows slide in/out from edges
+- **zoom** - Windows scale up/down
+
+## Basic Animation Settings
+
+<ParamField path="animations" type="boolean" default="1">
+  Enable animations for windows
+  
+  ```conf
+  animations=1
+  ```
+</ParamField>
+
+<ParamField path="layer_animations" type="boolean" default="1">
+  Enable animations for layer surfaces (panels, overlays, etc.)
+  
+  ```conf
+  layer_animations=1
+  ```
+</ParamField>
+
+## Animation Types per Action
+
+<ParamField path="animation_type_open" type="enum" default="slide">
+  Animation type when opening windows
+  
+  Values: `slide`, `zoom`
+  
+  ```conf
+  animation_type_open=slide
+  ```
+</ParamField>
+
+<ParamField path="animation_type_close" type="enum" default="slide">
+  Animation type when closing windows
+  
+  Values: `slide`, `zoom`
+  
+  ```conf
+  animation_type_close=slide
+  ```
+</ParamField>
+
+## Fade Effects
+
+<ParamField path="animation_fade_in" type="boolean" default="1">
+  Enable fade-in animation
+  
+  ```conf
+  animation_fade_in=1
+  ```
+</ParamField>
+
+<ParamField path="animation_fade_out" type="boolean" default="1">
+  Enable fade-out animation
+  
+  ```conf
+  animation_fade_out=1
+  ```
+</ParamField>
+
+<ParamField path="fadein_begin_opacity" type="float" default="0.5">
+  Starting opacity for fade-in (0.0 - 1.0)
+  
+  ```conf
+  fadein_begin_opacity=0.5
+  ```
+</ParamField>
+
+<ParamField path="fadeout_begin_opacity" type="float" default="0.8">
+  Starting opacity for fade-out (0.0 - 1.0)
+  
+  ```conf
+  fadeout_begin_opacity=0.8
+  ```
+</ParamField>
+
+## Tag Animation
+
+<ParamField path="tag_animation_direction" type="integer" default="1">
+  Direction for tag switching animations
+  
+  - `1` - Horizontal (left/right)
+  - `0` - Vertical (up/down)
+  
+  ```conf
+  tag_animation_direction=1
+  ```
+</ParamField>
+
+## Zoom Animation Parameters
+
+<ParamField path="zoom_initial_ratio" type="float" default="0.3">
+  Initial scale ratio for zoom animations (0.0 - 1.0)
+  
+  ```conf
+  zoom_initial_ratio=0.3
+  ```
+</ParamField>
+
+<ParamField path="zoom_end_ratio" type="float" default="0.8">
+  End scale ratio for zoom animations (0.0 - 1.0)
+  
+  ```conf
+  zoom_end_ratio=0.8
+  ```
+</ParamField>
+
+## Animation Durations
+
+All durations are in milliseconds.
+
+<ParamField path="animation_duration_open" type="integer" default="400">
+  Duration for window open animations in milliseconds
+  
+  ```conf
+  animation_duration_open=400
+  ```
+</ParamField>
+
+<ParamField path="animation_duration_close" type="integer" default="800">
+  Duration for window close animations in milliseconds
+  
+  ```conf
+  animation_duration_close=800
+  ```
+</ParamField>
+
+<ParamField path="animation_duration_move" type="integer" default="500">
+  Duration for window move animations in milliseconds
+  
+  ```conf
+  animation_duration_move=500
+  ```
+</ParamField>
+
+<ParamField path="animation_duration_tag" type="integer" default="350">
+  Duration for tag switching animations in milliseconds
+  
+  ```conf
+  animation_duration_tag=350
+  ```
+</ParamField>
+
+<ParamField path="animation_duration_focus" type="integer" default="0">
+  Duration for focus change animations in milliseconds
+  
+  Set to 0 to disable focus animations
+  
+  ```conf
+  animation_duration_focus=0
+  ```
+</ParamField>
+
+## Animation Curves (Bezier Easing)
+
+Animation curves use cubic Bezier format: `x1,y1,x2,y2`
+
+Common easing curves:
+- Linear: `0,0,1,1`
+- Ease-in-out: `0.42,0,0.58,1`
+- Ease-out: `0,0,0.58,1`
+- Ease-in: `0.42,0,1,1`
+- Custom (Mango default): `0.46,1.0,0.29,1`
+
+<ParamField path="animation_curve_open" type="string" default="0.46,1.0,0.29,1">
+  Bezier curve for window open animations
+  
+  ```conf
+  animation_curve_open=0.46,1.0,0.29,1
+  ```
+</ParamField>
+
+<ParamField path="animation_curve_close" type="string" default="0.08,0.92,0,1">
+  Bezier curve for window close animations
+  
+  ```conf
+  animation_curve_close=0.08,0.92,0,1
+  ```
+</ParamField>
+
+<ParamField path="animation_curve_move" type="string" default="0.46,1.0,0.29,1">
+  Bezier curve for window move animations
+  
+  ```conf
+  animation_curve_move=0.46,1.0,0.29,1
+  ```
+</ParamField>
+
+<ParamField path="animation_curve_tag" type="string" default="0.46,1.0,0.29,1">
+  Bezier curve for tag switching animations
+  
+  ```conf
+  animation_curve_tag=0.46,1.0,0.29,1
+  ```
+</ParamField>
+
+<ParamField path="animation_curve_focus" type="string" default="0.46,1.0,0.29,1">
+  Bezier curve for focus change animations
+  
+  ```conf
+  animation_curve_focus=0.46,1.0,0.29,1
+  ```
+</ParamField>
+
+<ParamField path="animation_curve_opafadeout" type="string" default="0.5,0.5,0.5,0.5">
+  Bezier curve for opacity fade-out
+  
+  ```conf
+  animation_curve_opafadeout=0.5,0.5,0.5,0.5
+  ```
+</ParamField>
+
+<ParamField path="animation_curve_opafadein" type="string" default="0.46,1.0,0.29,1">
+  Bezier curve for opacity fade-in
+  
+  ```conf
+  animation_curve_opafadein=0.46,1.0,0.29,1
+  ```
+</ParamField>
+
+## Complete Animation Configuration
+
+### Default Configuration
+
+```conf
+# Enable animations
+animations=1
+layer_animations=1
+
+# Animation types
+animation_type_open=slide
+animation_type_close=slide
+
+# Fade effects
+animation_fade_in=1
+animation_fade_out=1
+fadein_begin_opacity=0.5
+fadeout_begin_opacity=0.8
+
+# Tag animation
+tag_animation_direction=1
+
+# Zoom parameters
+zoom_initial_ratio=0.3
+zoom_end_ratio=0.8
+
+# Durations (milliseconds)
+animation_duration_open=400
+animation_duration_close=800
+animation_duration_move=500
+animation_duration_tag=350
+animation_duration_focus=0
+
+# Bezier curves
+animation_curve_open=0.46,1.0,0.29,1
+animation_curve_close=0.08,0.92,0,1
+animation_curve_move=0.46,1.0,0.29,1
+animation_curve_tag=0.46,1.0,0.29,1
+animation_curve_focus=0.46,1.0,0.29,1
+animation_curve_opafadeout=0.5,0.5,0.5,0.5
+animation_curve_opafadein=0.46,1.0,0.29,1
+```
+
+## Example Configurations
+
+### Fast and Snappy
+
+```conf
+animations=1
+animation_type_open=zoom
+animation_type_close=zoom
+animation_duration_open=200
+animation_duration_close=200
+animation_duration_move=200
+animation_duration_tag=200
+animation_curve_open=0,0,0.58,1
+animation_curve_close=0,0,0.58,1
+```
+
+### Smooth and Slow
+
+```conf
+animations=1
+animation_type_open=slide
+animation_type_close=slide
+animation_duration_open=600
+animation_duration_close=1000
+animation_duration_move=700
+animation_duration_tag=500
+animation_curve_open=0.42,0,0.58,1
+animation_curve_close=0.42,0,0.58,1
+```
+
+### Zoom with Fade
+
+```conf
+animations=1
+animation_type_open=zoom
+animation_type_close=zoom
+animation_fade_in=1
+animation_fade_out=1
+zoom_initial_ratio=0.5
+zoom_end_ratio=0.95
+fadein_begin_opacity=0.0
+fadeout_begin_opacity=1.0
+animation_duration_open=350
+animation_duration_close=350
+```
+
+### No Animations (Performance)
+
+```conf
+animations=0
+layer_animations=0
+animation_duration_focus=0
+```
+
+## Per-Layer Animation Overrides
+
+You can override animation types for specific layer surfaces using layer rules:
+
+```conf
+# Use zoom animation for rofi
+layerrule=animation_type_open:zoom,layer_name:rofi
+layerrule=animation_type_close:zoom,layer_name:rofi
+```
+
+See [Rules](/configuration/rules) for more information on layer rules.
+
+## Bezier Curve Reference
+
+Visualize and create custom Bezier curves at:
+- [cubic-bezier.com](https://cubic-bezier.com/)
+- [easings.net](https://easings.net/)
+
+### Common Presets
+
+```conf
+# Linear
+0,0,1,1
+
+# Ease (default CSS)
+0.25,0.1,0.25,1
+
+# Ease-in
+0.42,0,1,1
+
+# Ease-out
+0,0,0.58,1
+
+# Ease-in-out
+0.42,0,0.58,1
+
+# Ease-in-back
+0.6,-0.28,0.735,0.045
+
+# Ease-out-back
+0.175,0.885,0.32,1.275
+
+# Ease-in-out-back
+0.68,-0.55,0.265,1.55
+```
+
+## Performance Tips
+
+1. **Disable animations** entirely on low-end hardware
+2. **Reduce durations** for snappier feel and better performance
+3. **Disable layer animations** if experiencing lag with overlays
+4. **Set `animation_duration_focus=0`** to eliminate focus delay
+5. **Use slide instead of zoom** for slightly better performance

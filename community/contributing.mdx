@@ -1,0 +1,123 @@
+---
+title: Contributing
+description: How to contribute to Mango Wayland Compositor
+---
+
+## Welcome Contributors
+
+Mango is an open-source Wayland compositor, and we welcome contributions from the community. Whether you're fixing bugs, adding features, improving documentation, or packaging for distributions, your help is appreciated.
+
+## Mango's Vision
+
+**Stability is the primary goal**: After months of testing and development—and aside from a few lingering GPU compatibility issues—Mango is now stable enough. We don't plan on making many breaking changes.
+
+**Practicality is preferred**: We tend to add features that genuinely help with daily workflows—things that make work more convenient.
+
+**Not every preference will be catered to**: For niche feature requests, we take a wait-and-see approach. We'll only consider adding them if they get a significant number of upvotes.
+
+## Getting Started
+
+### Building from Source
+
+Mango is lightweight and can be built completely within a few seconds:
+
+```bash
+git clone -b 0.19.2 https://gitlab.freedesktop.org/wlroots/wlroots.git
+cd wlroots
+meson build -Dprefix=/usr
+sudo ninja -C build install
+
+git clone -b 0.4.1 https://github.com/wlrfx/scenefx.git
+cd scenefx
+meson build -Dprefix=/usr
+sudo ninja -C build install
+
+git clone https://github.com/mangowm/mango.git
+cd mangowm
+meson build -Dprefix=/usr
+sudo ninja -C build install
+```
+
+### Dependencies
+
+- wayland
+- wayland-protocols
+- libinput
+- libdrm
+- libxkbcommon
+- pixman
+- libdisplay-info
+- libliftoff
+- hwdata
+- seatd
+- pcre2
+- xorg-xwayland
+- libxcb
+
+## Ways to Contribute
+
+### Code Contributions
+
+- Bug fixes
+- Feature implementations (aligned with Mango's vision)
+- Performance improvements
+- GPU compatibility fixes
+
+### Documentation
+
+- Improve existing documentation
+- Add tutorials and guides
+- Translate documentation
+- Document undocumented features
+
+For documentation resources, refer to:
+- [Wiki](https://github.com/mangowm/mango/wiki/)
+- [Official docs](https://mangowm.github.io/)
+
+### Testing
+
+- Test on different hardware configurations
+- Report GPU compatibility issues
+- Verify bug fixes
+- Test new features
+
+### Community Support
+
+- Help users on [Discord](https://discord.gg/CPjbDxesh5)
+- Answer questions in GitHub issues
+- Share your configurations and dotfiles
+
+## Reporting Issues
+
+When reporting issues:
+
+1. Check if the issue already exists
+2. Provide detailed information:
+   - Your system configuration
+   - GPU and driver information
+   - Steps to reproduce
+   - Expected vs actual behavior
+   - Relevant logs or error messages
+
+## Feature Requests
+
+For feature requests:
+
+1. Check if a similar request exists and upvote it
+2. Explain how the feature helps with daily workflows
+3. Consider if it aligns with Mango's vision of practicality
+4. Be aware that niche features require community support (upvotes) to be considered
+
+## Development Resources
+
+Mango's development is based on [dwl](https://codeberg.org/dwl/dwl/) and references:
+
+- [wlroots](https://gitlab.freedesktop.org/wlroots/wlroots) - Implementation of Wayland protocol
+- [owl](https://github.com/dqrk0jeste/owl) - Basal window animation
+- [dwl](https://codeberg.org/dwl/dwl) - Basal dwl feature
+- [sway](https://github.com/swaywm/sway) - Sample of Wayland protocol
+- [scenefx](https://github.com/wlrfx/scenefx) - Window effects implementation
+
+## Join the Community
+
+Connect with other Mango users and contributors on [Discord](https://discord.gg/CPjbDxesh5).

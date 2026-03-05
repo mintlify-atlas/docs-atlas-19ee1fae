@@ -1,0 +1,372 @@
+---
+title: Window Effects
+description: Configure blur, shadows, corner radius, and other visual effects in Mango
+---
+
+## Blur Effects
+
+Mango supports sophisticated blur effects for windows and layer surfaces.
+
+### Basic Blur Settings
+
+<ParamField path="blur" type="boolean" default="0">
+  Enable blur effect for windows
+  
+  - `1` - Enable blur
+  - `0` - Disable blur
+  
+  ```conf
+  blur=0
+  ```
+</ParamField>
+
+<ParamField path="blur_layer" type="boolean" default="0">
+  Enable blur effect for layer surfaces (like panels, docks, and overlays)
+  
+  ```conf
+  blur_layer=0
+  ```
+</ParamField>
+
+<ParamField path="blur_optimized" type="boolean" default="1">
+  Use optimized blur algorithm for better performance
+  
+  ```conf
+  blur_optimized=1
+  ```
+</ParamField>
+
+### Blur Parameters
+
+Fine-tune blur appearance with these advanced parameters:
+
+<ParamField path="blur_params_num_passes" type="integer" default="2">
+  Number of blur passes. More passes = smoother blur but lower performance
+  
+  ```conf
+  blur_params_num_passes=2
+  ```
+</ParamField>
+
+<ParamField path="blur_params_radius" type="integer" default="5">
+  Blur radius in pixels. Higher values = more blur
+  
+  ```conf
+  blur_params_radius=5
+  ```
+</ParamField>
+
+<ParamField path="blur_params_noise" type="float" default="0.02">
+  Amount of noise to add to blur (reduces banding)
+  
+  Range: 0.0 - 1.0
+  
+  ```conf
+  blur_params_noise=0.02
+  ```
+</ParamField>
+
+<ParamField path="blur_params_brightness" type="float" default="0.9">
+  Brightness adjustment for blurred content
+  
+  Range: 0.0 - 2.0 (1.0 = no change)
+  
+  ```conf
+  blur_params_brightness=0.9
+  ```
+</ParamField>
+
+<ParamField path="blur_params_contrast" type="float" default="0.9">
+  Contrast adjustment for blurred content
+  
+  Range: 0.0 - 2.0 (1.0 = no change)
+  
+  ```conf
+  blur_params_contrast=0.9
+  ```
+</ParamField>
+
+<ParamField path="blur_params_saturation" type="float" default="1.2">
+  Saturation adjustment for blurred content
+  
+  Range: 0.0 - 2.0 (1.0 = no change)
+  
+  ```conf
+  blur_params_saturation=1.2
+  ```
+</ParamField>
+
+### Blur Examples
+
+#### Subtle Blur
+
+```conf
+blur=1
+blur_optimized=1
+blur_params_num_passes=2
+blur_params_radius=3
+blur_params_noise=0.01
+blur_params_brightness=1.0
+blur_params_contrast=1.0
+blur_params_saturation=1.0
+```
+
+#### Strong Blur
+
+```conf
+blur=1
+blur_optimized=1
+blur_params_num_passes=4
+blur_params_radius=10
+blur_params_noise=0.03
+blur_params_brightness=0.8
+blur_params_contrast=0.8
+blur_params_saturation=1.4
+```
+
+## Shadows
+
+Add drop shadows to windows for depth and visual separation.
+
+### Basic Shadow Settings
+
+<ParamField path="shadows" type="boolean" default="0">
+  Enable shadows for windows
+  
+  ```conf
+  shadows=0
+  ```
+</ParamField>
+
+<ParamField path="layer_shadows" type="boolean" default="0">
+  Enable shadows for layer surfaces
+  
+  ```conf
+  layer_shadows=0
+  ```
+</ParamField>
+
+<ParamField path="shadow_only_floating" type="boolean" default="1">
+  Only show shadows on floating windows
+  
+  - `1` - Shadows only on floating windows
+  - `0` - Shadows on all windows
+  
+  ```conf
+  shadow_only_floating=1
+  ```
+</ParamField>
+
+### Shadow Appearance
+
+<ParamField path="shadows_size" type="integer" default="10">
+  Shadow size in pixels
+  
+  ```conf
+  shadows_size=10
+  ```
+</ParamField>
+
+<ParamField path="shadows_blur" type="integer" default="15">
+  Shadow blur amount in pixels. Higher = softer shadows
+  
+  ```conf
+  shadows_blur=15
+  ```
+</ParamField>
+
+<ParamField path="shadowscolor" type="color" default="0x000000ff">
+  Shadow color in RGBA hexadecimal format
+  
+  ```conf
+  shadowscolor=0x000000ff
+  ```
+</ParamField>
+
+### Shadow Position
+
+<ParamField path="shadows_position_x" type="integer" default="0">
+  Horizontal shadow offset in pixels
+  
+  - Positive values: shadow to the right
+  - Negative values: shadow to the left
+  
+  ```conf
+  shadows_position_x=0
+  ```
+</ParamField>
+
+<ParamField path="shadows_position_y" type="integer" default="0">
+  Vertical shadow offset in pixels
+  
+  - Positive values: shadow downward
+  - Negative values: shadow upward
+  
+  ```conf
+  shadows_position_y=0
+  ```
+</ParamField>
+
+### Shadow Examples
+
+#### Soft Drop Shadow
+
+```conf
+shadows=1
+layer_shadows=0
+shadow_only_floating=1
+shadows_size=15
+shadows_blur=20
+shadows_position_x=0
+shadows_position_y=5
+shadowscolor=0x00000088
+```
+
+#### Hard Shadow
+
+```conf
+shadows=1
+shadow_only_floating=0
+shadows_size=8
+shadows_blur=5
+shadows_position_x=3
+shadows_position_y=3
+shadowscolor=0x000000cc
+```
+
+## Corner Radius
+
+Round window corners for a modern appearance.
+
+<ParamField path="border_radius" type="integer" default="6">
+  Corner radius in pixels
+  
+  ```conf
+  border_radius=6
+  ```
+</ParamField>
+
+<ParamField path="no_radius_when_single" type="boolean" default="0">
+  Disable rounded corners when only one window is visible
+  
+  ```conf
+  no_radius_when_single=0
+  ```
+</ParamField>
+
+### Corner Radius Examples
+
+```conf
+# No rounded corners
+border_radius=0
+
+# Subtle rounding
+border_radius=4
+
+# Modern rounded
+border_radius=10
+
+# Heavily rounded
+border_radius=20
+```
+
+## Window Opacity
+
+Control transparency of focused and unfocused windows.
+
+<ParamField path="focused_opacity" type="float" default="1.0">
+  Opacity for the focused window (0.0 = transparent, 1.0 = opaque)
+  
+  ```conf
+  focused_opacity=1.0
+  ```
+</ParamField>
+
+<ParamField path="unfocused_opacity" type="float" default="1.0">
+  Opacity for unfocused windows (0.0 = transparent, 1.0 = opaque)
+  
+  ```conf
+  unfocused_opacity=1.0
+  ```
+</ParamField>
+
+### Opacity Examples
+
+```conf
+# Dimmed unfocused windows
+focused_opacity=1.0
+unfocused_opacity=0.85
+
+# Transparent terminal background
+focused_opacity=0.95
+unfocused_opacity=0.8
+```
+
+## Complete Effects Configuration
+
+Here's a full example with all effects enabled:
+
+```conf
+# Blur
+blur=1
+blur_layer=1
+blur_optimized=1
+blur_params_num_passes=2
+blur_params_radius=5
+blur_params_noise=0.02
+blur_params_brightness=0.9
+blur_params_contrast=0.9
+blur_params_saturation=1.2
+
+# Shadows
+shadows=1
+layer_shadows=1
+shadow_only_floating=1
+shadows_size=10
+shadows_blur=15
+shadows_position_x=0
+shadows_position_y=0
+shadowscolor=0x000000ff
+
+# Rounded corners
+border_radius=6
+no_radius_when_single=0
+
+# Opacity
+focused_opacity=1.0
+unfocused_opacity=1.0
+```
+
+## Performance Considerations
+
+<Warning>
+Enabling multiple effects can impact performance, especially on lower-end hardware.
+</Warning>
+
+**Performance Tips:**
+
+1. **Enable `blur_optimized`** for better blur performance
+2. **Reduce `blur_params_num_passes`** if experiencing lag
+3. **Lower `blur_params_radius`** for faster rendering
+4. **Use `shadow_only_floating=1`** to reduce shadow rendering overhead
+5. **Disable `layer_shadows`** if not needed
+
+## Minimal Configuration
+
+For best performance with minimal effects:
+
+```conf
+# Disable effects
+blur=0
+blur_layer=0
+shadows=0
+layer_shadows=0
+
+# Keep subtle rounded corners
+border_radius=4
+no_radius_when_single=0
+
+# Full opacity
+focused_opacity=1.0
+unfocused_opacity=1.0
+```

@@ -1,0 +1,509 @@
+---
+title: Animation System
+description: Understanding Mango's powerful animation engine for smooth window transitions
+---
+
+## Overview
+
+Mango features a sophisticated **animation system** that provides smooth, configurable transitions for window movements, resizing, tag switches, and state changes. Animations use cubic Bézier curves for natural easing and can be customized per action type.
+
+## Animation Configuration
+
+### Global Animation Settings
+
+```conf
+# Enable/disable animations
+animations=1              # Master switch for client animations
+layer_animations=1        # Animations for layer surfaces (menus, panels)
+
+# Animation types (zoom, slide, fade, none)
+animation_type_open=slide
+animation_type_close=slide
+
+# Fade effects
+animation_fade_in=1
+animation_fade_out=1
+fadein_begin_opacity=0.5
+fadeout_begin_opacity=0.8
+
+# Tag animation direction
+tag_animation_direction=1  # 1=horizontal, 0=vertical
+
+# Zoom animation ratios
+zoom_initial_ratio=0.3     # Starting size (30%)
+zoom_end_ratio=0.8         # Ending size (80%)
+```
+
+### Animation Durations
+
+Each animation type has a configurable duration in milliseconds:
+
+```conf
+animation_duration_move=500    # Window resize/move
+animation_duration_open=400    # Window opening
+animation_duration_tag=350     # Tag switching
+animation_duration_close=800   # Window closing
+animation_duration_focus=0     # Focus transitions (0=instant)
+```
+
+### Animation Curves
+
+Mango uses **cubic Bézier curves** for easing. Each curve is defined by four control points:
+
+```conf
+# Format: x1,y1,x2,y2 (control points)
+animation_curve_open=0.46,1.0,0.29,1      # Ease out
+animation_curve_move=0.46,1.0,0.29,1      # Ease out
+animation_curve_tag=0.46,1.0,0.29,1       # Ease out
+animation_curve_close=0.08,0.92,0,1       # Ease in-out
+animation_curve_focus=0.46,1.0,0.29,1     # Ease out
+animation_curve_opafadein=0.46,1.0,0.29,1 # Opacity fade in
+animation_curve_opafadeout=0.5,0.5,0.5,0.5 # Opacity fade out (linear)
+```
+
+<Note>
+  Bézier curves are pre-calculated at startup into 256 baked points for performance. The system uses binary search to find the curve value at any time.
+</Note>
+
+## Animation Types
+
+### Window Opening Animations
+
+When a window opens, it can use different animation styles:
+
+#### Slide Animation
+
+Windows slide in from the nearest screen edge:
+
+```conf
+animation_type_open=slide
+```
+
+**Behavior:**
+- Determines nearest edge based on window position
+- Slides from off-screen to final position
+- Direction adapts to window location
+- Special rules for master/stack positions
+
+**Direction logic:**
+```c
+// Window closer to bottom → slide up from bottom
+// Window closer to top → slide down from top
+// Window closer to left → slide in from left
+// Window closer to right → slide in from right
+```
+
+#### Zoom Animation
+
+Windows scale up from center:
+
+```conf
+animation_type_open=zoom
+zoom_initial_ratio=0.3  # Starts at 30% size
+```
+
+**Behavior:**
+- Begins at `zoom_initial_ratio` size
+- Scales up to full size
+- Centers on final position
+- Combines with opacity fade-in
+
+#### Fade Animation
+
+Windows fade in without movement:
+
+```conf
+animation_type_open=fade
+```
+
+**Behavior:**
+- Position remains static
+- Only opacity animates
+- From `fadein_begin_opacity` to target opacity
+- Fast and subtle
+
+### Window Closing Animations
+
+Similar types available for closing:
+
+```conf
+animation_type_close=slide  # or zoom, fade, none
+```
+
+**Closing behavior:**
+- Creates fadeout snapshot of window
+- Original window immediately destroyed
+- Snapshot animates out
+- Freed after animation completes
+
+**Zoom-out closing:**
+```conf
+animation_type_close=zoom
+zoom_end_ratio=0.8  # Shrinks to 80% before disappearing
+```
+
+### Tag Switch Animations
+
+When switching tags, windows animate in and out:
+
+```conf
+tag_animation_direction=1  # 1=horizontal, 0=vertical
+animation_duration_tag=350
+```
+
+**Animation states:**
+```c
+bool tagining;    // Window entering view
+bool tagouting;   // Window leaving view
+bool tagouted;    // Window fully hidden
+```
+
+**Horizontal tag animation:**
+- Windows slide left/right
+- Next tag slides in from opposite direction
+- Previous tag slides out opposite direction
+
+**Vertical tag animation:**
+- Windows slide up/down
+- Next tag slides up from bottom
+- Previous tag slides down to bottom
+
+### Move and Resize Animations
+
+Smooth transitions when windows change size or position:
+
+```conf
+animation_duration_move=500
+animation_curve_move=0.46,1.0,0.29,1
+```
+
+**Triggers:**
+- Layout changes
+- Manual resizing
+- Master/stack ratio adjustments
+- Gap changes
+- Monitor changes
+
+### Focus Animations
+
+Optional animations when focus changes:
+
+```conf
+animation_duration_focus=0  # 0=instant, >0=animate
+```
+
+**Effects:**
+- Border color transition
+- Opacity transition (focused vs. unfocused)
+- Smooth visual feedback
+
+## Animation Implementation
+
+### Animation Structure
+
+```c
+struct dwl_animation {
+    bool should_animate;    // Animation requested
+    bool running;           // Currently animating
+    bool tagining;          // Tag-in animation
+    bool tagouted;          // Tag-out complete
+    bool tagouting;         // Tag-out animation
+    bool begin_fade_in;     // Fade-in pending
+    bool tag_from_rule;     // Tag set by rule
+    uint32_t time_started;  // Animation start time (ms)
+    uint32_t duration;      // Total duration (ms)
+    struct wlr_box initial; // Starting geometry
+    struct wlr_box current; // Current animated position
+    int32_t action;         // Animation type (OPEN, MOVE, TAG, CLOSE)
+};
+```
+
+### Animation Actions
+
+```c
+enum { 
+    NONE,           // No animation
+    OPEN,           // Window opening
+    MOVE,           // Window moving/resizing
+    CLOSE,          // Window closing
+    TAG,            // Tag switching
+    FOCUS,          // Focus change
+    OPAFADEIN,      // Opacity fade in
+    OPAFADEOUT      // Opacity fade out
+};
+```
+
+### Animation Tick
+
+Animations are frame-based:
+
+```c
+void client_animation_next_tick(Client *c) {
+    // Calculate elapsed time
+    int32_t passed_time = now() - c->animation.time_started;
+    double progress = (double)passed_time / (double)c->animation.duration;
+    
+    // Apply easing curve
+    double factor = find_animation_curve_at(progress, c->animation.action);
+    
+    // Interpolate position
+    int32_t x = c->animation.initial.x + 
+                (c->current.x - c->animation.initial.x) * factor;
+    int32_t y = c->animation.initial.y + 
+                (c->current.y - c->animation.initial.y) * factor;
+    
+    // Update scene node position
+    wlr_scene_node_set_position(&c->scene->node, x, y);
+    
+    // Apply clipping and effects
+    client_apply_clip(c, factor);
+    
+    if (progress >= 1.0) {
+        c->animation.running = false;
+    }
+}
+```
+
+### Opacity Animations
+
+Separate system for opacity transitions:
+
+```c
+struct dwl_opacity_animation {
+    bool running;
+    float current_opacity;
+    float target_opacity;
+    float initial_opacity;
+    uint32_t time_started;
+    uint32_t duration;
+    float current_border_color[4];
+    float target_border_color[4];
+    float initial_border_color[4];
+};
+```
+
+**Combined effects:**
+- Opacity fade
+- Border color transition
+- Synchronized with position animation
+
+## Per-Window Animation Control
+
+Override animations for specific windows:
+
+### Window Rules
+
+```conf
+# Disable animations for specific app
+windowrule=appid:terminal,isnoanimation:1
+
+# Custom animation types
+windowrule=appid:rofi,animation_type_open:zoom
+windowrule=appid:rofi,animation_type_close:zoom
+
+# Disable fade effects
+windowrule=appid:game,nofadein:1,nofadeout:1
+```
+
+### Available Override Properties
+
+```c
+const char *animation_type_open;   // Override open animation
+const char *animation_type_close;  // Override close animation
+int32_t isnoanimation;             // Disable all animations
+int32_t nofadein;                  // Disable fade-in
+int32_t nofadeout;                 // Disable fade-out
+int32_t isopensilent;              // Open without animation
+int32_t istagsilent;               // Tag without animation
+```
+
+## Layer Surface Animations
+
+Layer surfaces (panels, menus) have separate animation control:
+
+```conf
+layer_animations=1
+
+# Layer-specific rules
+layerrule=animation_type_open:zoom,layer_name:rofi
+layerrule=animation_type_close:zoom,layer_name:rofi
+```
+
+**Layer animation structure:**
+```c
+typedef struct {
+    // ... other fields ...
+    struct dwl_animation animation;
+    int32_t noanim;                  // Disable animation
+    char *animation_type_open;
+    char *animation_type_close;
+} LayerSurface;
+```
+
+## Animation Performance
+
+### Baked Curves
+
+Curves are pre-calculated for performance:
+
+```c
+#define BAKED_POINTS_COUNT 256
+
+// Pre-calculated curve points
+struct dvec2 *baked_points_move;
+struct dvec2 *baked_points_open;
+struct dvec2 *baked_points_tag;
+struct dvec2 *baked_points_close;
+struct dvec2 *baked_points_focus;
+struct dvec2 *baked_points_opafadein;
+struct dvec2 *baked_points_opafadeout;
+```
+
+**Curve lookup:**
+```c
+double find_animation_curve_at(double t, int32_t type) {
+    // Binary search through 256 baked points
+    // Returns y-value for given x (time)
+    // O(log n) performance
+}
+```
+
+### Frame Scheduling
+
+Animations request frame callbacks:
+
+```c
+void request_fresh_all_monitors(void) {
+    Monitor *m;
+    wl_list_for_each(m, &mons, link) {
+        if (m->wlr_output->enabled) {
+            wlr_output_schedule_frame(m->wlr_output);
+        }
+    }
+}
+```
+
+### Animation Batching
+
+Multiple animations processed per frame:
+
+```c
+// In rendermon()
+Client *c;
+wl_list_for_each(c, &clients, link) {
+    if (c->animation.running) {
+        client_draw_frame(c);
+    }
+}
+
+// Process fadeout animations
+wl_list_for_each(c, &fadeout_clients, fadeout_link) {
+    client_draw_fadeout_frame(c);
+}
+```
+
+## Special Animation Cases
+
+### Overview Mode Animations
+
+Overview uses modified animations:
+
+```conf
+overviewgappi=5   # Inner gaps in overview
+overviewgappo=30  # Outer gaps in overview
+```
+
+**Behavior:**
+- All windows shown in grid
+- Different animation curves
+- Special sizing calculations
+- Backed-up states restored on exit
+
+### Scroller Layout Animations
+
+Scroller windows scroll smoothly:
+
+```conf
+scroller_focus_center=0  # Animate to center focused window
+```
+
+**Effects:**
+- Horizontal/vertical scrolling
+- Focus-based positioning
+- Smooth proportion changes
+
+### Drag Animation Disabling
+
+Animations pause during dragging:
+
+```c
+if (c == grabc) {  // grabc = grabbed client
+    c->animation.running = false;
+    c->animation.duration = 0;
+}
+```
+
+## Animation Debugging
+
+### Disable Animations Temporarily
+
+```conf
+# Set duration to 0 to see instant changes
+animation_duration_move=0
+animation_duration_open=0
+animation_duration_tag=0
+animation_duration_close=0
+
+# Or disable completely
+animations=0
+```
+
+### Performance Monitoring
+
+```c
+// Check frame timing
+struct timespec now;
+clock_gettime(CLOCK_MONOTONIC, &now);
+int32_t frame_time = timespec_to_ms(&now) - last_frame_time;
+```
+
+## Best Practices
+
+<Card title="Animation Tuning" icon="sliders">
+  **Smooth experience:**
+  - Keep durations under 500ms for responsiveness
+  - Use ease-out curves for opening (0.46,1.0,0.29,1)
+  - Use ease-in-out for closing (0.08,0.92,0,1)
+  - Disable animations for games and video players
+  
+  **Performance:**
+  - Reduce durations on slower hardware
+  - Disable fade effects if needed
+  - Use `isnoanimation` for intensive applications
+</Card>
+
+<Card title="Animation Curves" icon="wave-square">
+  **Common easing curves:**
+  ```conf
+  # Ease out (decelerating)
+  0.46,1.0,0.29,1
+  
+  # Ease in (accelerating)
+  0.42,0,1,1
+  
+  # Ease in-out (smooth)
+  0.42,0,0.58,1
+  
+  # Linear
+  0.5,0.5,0.5,0.5
+  
+  # Bounce-like
+  0.68,-0.55,0.265,1.55
+  ```
+</Card>
+
+## Related Concepts
+
+- [Window States](/concepts/window-states) - How states trigger animations
+- [Layouts](/concepts/layouts) - Layout change animations
+- [Tags](/concepts/tags) - Tag switch animation behavior

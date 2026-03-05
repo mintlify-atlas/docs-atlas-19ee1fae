@@ -1,0 +1,518 @@
+---
+title: IPC Commands Reference
+description: Complete reference for mmsg IPC client commands
+---
+
+The `mmsg` utility is Mango's IPC client for querying and controlling the compositor. It supports three operation modes: get, set, and watch.
+
+## Synopsis
+
+```bash
+# Get compositor state
+mmsg [-OTLq]
+mmsg [-o <output>] (-g | -w) [-OotlcvmfxekbA]
+
+# Set compositor state
+mmsg [-o <output>] -s [-t <tags>] [-l <layout>] [-c <tags>] [-d <cmd>,<args>]
+```
+
+## Operation Modes
+
+### `-g` Get Mode
+
+Query current compositor state once and exit.
+
+```bash
+# Get all information
+mmsg -g
+
+# Get specific information
+mmsg -g -t        # tags only
+mmsg -g -l        # layout only
+mmsg -g -c        # focused client only
+```
+
+### `-s` Set Mode
+
+Modify compositor state and exit.
+
+```bash
+# Switch to tag 2
+mmsg -s -t 2
+
+# Change layout
+mmsg -s -l monocle
+
+# Dispatch internal command
+mmsg -s -d focusstack,1
+```
+
+### `-w` Watch Mode
+
+Continuously stream compositor events. Useful for status bars.
+
+```bash
+# Watch all events
+mmsg -w
+
+# Watch specific events
+mmsg -w -t        # tag changes
+mmsg -w -c        # focused client changes
+mmsg -w -l        # layout changes
+```
+
+## General Options
+
+### `-O` Get Output Names
+
+List all connected outputs (monitors).
+
+```bash
+$ mmsg -O
+eDP-1
+HDMI-A-1
+```
+
+In watch mode, shows output hotplug events:
+```bash
+$ mmsg -w -O
+eDP-1
++ HDMI-A-1    # connected
+- HDMI-A-1    # disconnected
+```
+
+### `-T` Get Tag Count
+
+Return the number of configured tags.
+
+```bash
+$ mmsg -T
+9
+```
+
+### `-L` Get Layouts
+
+List all available layouts.
+
+```bash
+$ mmsg -L
+tile
+monocle
+deck
+centered
+```
+
+### `-q` Quit Compositor
+
+Instruct Mango to quit.
+
+```bash
+mmsg -q
+```
+
+### `-o <output>` Select Output
+
+Target a specific output. Without this, operations target the active output.
+
+```bash
+# Get tags on HDMI output
+mmsg -o HDMI-A-1 -g -t
+
+# Switch tags on eDP output
+mmsg -o eDP-1 -s -t 3
+```
+
+## Get Options
+
+### `-o` Output Focus
+
+Show which output is currently focused (selected monitor).
+
+```bash
+$ mmsg -g -o
+eDP-1 selmon 1
+HDMI-A-1 selmon 0
+```
+
+### `-t` Tag Information
+
+Get detailed tag state: occupancy, selection, and urgency.
+
+```bash
+$ mmsg -g -t
+eDP-1 tag 1 1 3 1     # tag 1: active, 3 clients, focused
+eDP-1 tag 2 0 0 0     # tag 2: inactive, empty
+eDP-1 tag 3 0 5 0     # tag 3: inactive, 5 clients, unfocused
+eDP-1 clients 8       # total clients
+eDP-1 tags 8 1 0      # occupancy=8, selected=1, urgent=0
+eDP-1 tags 000001000 000000001 000000000  # binary representation
+```
+
+Output format:
+- `tag <n> <state> <clients> <focused>`
+  - `n`: tag number (1-indexed)
+  - `state`: 0=none, 1=active, 2=urgent
+  - `clients`: client count
+  - `focused`: 1=has focus, 0=no focus
+- `tags <occ> <sel> <urg>`: bitmasks (decimal)
+- `tags <occ> <sel> <urg>`: bitmasks (9-bit binary)
+
+### `-l` Layout Information
+
+Get current layout symbol.
+
+```bash
+$ mmsg -g -l
+eDP-1 layout []=
+```
+
+### `-c` Client Information
+
+Get focused client's title and application ID.
+
+```bash
+$ mmsg -g -c
+eDP-1 title ~/workspace/docs
+eDP-1 appid Alacritty
+```
+
+### `-v` Statusbar Visibility
+
+Get statusbar visibility toggle events.
+
+```bash
+$ mmsg -w -v
+eDP-1 toggle
+```
+
+### `-m` Fullscreen Status
+
+Check if focused client is fullscreen.
+
+```bash
+$ mmsg -g -m
+eDP-1 fullscreen 1
+```
+
+### `-f` Floating Status
+
+Check if focused client is floating.
+
+```bash
+$ mmsg -g -f
+eDP-1 floating 0
+```
+
+### `-x` Client Geometry
+
+Get focused client's position and dimensions.
+
+```bash
+$ mmsg -g -x
+eDP-1 x 0
+eDP-1 y 25
+eDP-1 width 1920
+eDP-1 height 1055
+```
+
+### `-e` Last Layer
+
+Get name of the last focused layer.
+
+```bash
+$ mmsg -g -e
+eDP-1 last_layer top
+```
+
+### `-k` Keyboard Layout
+
+Get current keyboard layout.
+
+```bash
+$ mmsg -g -k
+eDP-1 kb_layout us
+```
+
+### `-b` Keybind Mode
+
+Get current keybind mode.
+
+```bash
+$ mmsg -g -b
+eDP-1 keymode normal
+```
+
+### `-A` Scale Factor
+
+Get output scale factor.
+
+```bash
+$ mmsg -g -A
+eDP-1 scale_factor 1.500000
+```
+
+## Set Options
+
+### `-t <tagspec>` Set Tags
+
+Switch active tags using tag specification.
+
+#### Numeric Format
+
+Switch to a single tag:
+```bash
+mmsg -s -t 1      # switch to tag 1
+mmsg -s -t 5      # switch to tag 5
+```
+
+#### Modifier Format
+
+Toggle tags using modifiers `+`, `-`, `^`:
+
+```bash
+# Add tag 2 to current view
+mmsg -s -t +-+
+
+# Remove tag 1 from current view  
+mmsg -s -t --+
+
+# Toggle tag 3
+mmsg -s -t ++-^+
+```
+
+Position in string corresponds to tag number:
+- Position 1 → Tag 1
+- Position 2 → Tag 2
+- etc.
+
+Modifiers:
+- `+`: Enable tag
+- `-`: Disable tag
+- `^`: Toggle tag
+
+#### Implementation from mmsg.c
+
+```c
+uint32_t mask = seltags;
+char *t = tagset;
+int32_t i = 0;
+
+// Parse leading digits as tag number
+for (; *t && *t >= '0' && *t <= '9'; t++)
+    i = *t - '0' + i * 10;
+
+// If only digits, set single tag
+if (!*t)
+    mask = 1 << (i - 1);
+
+// Apply modifiers
+for (; *t; t++, i++) {
+    switch (*t) {
+    case '-':
+        mask &= ~(1 << (i - 1));
+        break;
+    case '+':
+        mask |= 1 << (i - 1);
+        break;
+    case '^':
+        mask ^= 1 << (i - 1);
+        break;
+    }
+}
+
+zdwl_ipc_output_v2_set_tags(dwl_ipc_output, mask, 0);
+```
+
+### `-l <layout>` Set Layout
+
+Change the layout by name.
+
+```bash
+# List available layouts
+mmsg -L
+
+# Switch to monocle layout
+mmsg -s -l monocle
+```
+
+The layout name must match one of the layouts announced by the compositor.
+
+### `-c <tagspec>` Set Client Tags
+
+Move focused client to different tags.
+
+```bash
+# Move to tag 3
+mmsg -s -c 3
+
+# Add client to tag 2
+mmsg -s -c +-+
+
+# Remove from tag 1
+mmsg -s -c --+
+```
+
+Tag specification works the same as `-t`, but affects client tags instead of view tags.
+
+#### Implementation from mmsg.c
+
+```c
+uint32_t and = ~0, xor = 0;
+char *t = client_tags;
+int32_t i = 0;
+
+for (; *t && *t >= '0' && *t <= '9'; t++)
+    i = *t - '0' + i * 10;
+
+if (!*t)
+    t = "+";  // default to adding tag
+
+for (; *t; t++, i++) {
+    switch (*t) {
+    case '-':
+        and &= ~(1 << (i - 1));
+        break;
+    case '+':
+        and &= ~(1 << (i - 1));
+        xor |= 1 << (i - 1);
+        break;
+    case '^':
+        xor |= 1 << (i - 1);
+        break;
+    }
+}
+
+// New tags = (current_tags AND and) XOR xor
+zdwl_ipc_output_v2_set_client_tags(dwl_ipc_output, and, xor);
+```
+
+### `-d <cmd>,<arg1>,<arg2>,...` Dispatch Command
+
+Execute internal compositor commands. Supports up to 5 arguments.
+
+```bash
+# Focus next client in stack
+mmsg -s -d focusstack,1
+
+# Focus previous client
+mmsg -s -d focusstack,-1
+
+# Set master factor
+mmsg -s -d setmfact,0.55
+
+# Zoom (swap with master)
+mmsg -s -d zoom
+
+# Kill focused client
+mmsg -s -d killclient
+
+# Toggle floating
+mmsg -s -d togglefloating
+
+# Move floating client
+mmsg -s -d moveclient,100,50
+```
+
+The dispatch command is sent directly to the compositor's internal command handler. Available commands depend on your Mango configuration.
+
+#### Implementation from mmsg.c
+
+```c
+zdwl_ipc_output_v2_dispatch(
+    dwl_ipc_output,
+    dispatch_cmd,
+    dispatch_arg1,
+    dispatch_arg2, 
+    dispatch_arg3,
+    dispatch_arg4,
+    dispatch_arg5
+);
+```
+
+Arguments are comma-separated and automatically trimmed of whitespace.
+
+## Examples
+
+### Status Bar Integration
+
+Watch tags and layout for a status bar:
+
+```bash
+#!/bin/bash
+mmsg -w -t -l | while read -r line; do
+    case "$line" in
+        *"tags"*)
+            echo "Tags: $line" > /tmp/tags
+            ;;
+        *"layout"*)
+            echo "Layout: $line" > /tmp/layout
+            ;;
+    esac
+done
+```
+
+### Tag Switching Script
+
+```bash
+#!/bin/bash
+# Switch to tag or toggle if already active
+
+TAG=$1
+CURRENT=$(mmsg -g -t | grep "tag $TAG" | awk '{print $4}')
+
+if [ "$CURRENT" = "1" ]; then
+    # Tag is active, toggle it
+    mmsg -s -t "$(printf '%.0s+' $(seq 1 $((TAG-1))))^$(printf '%.0s+' $(seq $((TAG+1)) 9))"
+else
+    # Switch to tag
+    mmsg -s -t $TAG
+fi
+```
+
+### Multi-Monitor Control
+
+```bash
+#!/bin/bash
+# Move focused client to other monitor's tag 1
+
+OTHER_OUTPUT=$(mmsg -g -o | grep "selmon 0" | awk '{print $1}')
+
+if [ -n "$OTHER_OUTPUT" ]; then
+    # Move client to tag 1
+    mmsg -s -c 1
+    # Switch other monitor to tag 1
+    mmsg -o "$OTHER_OUTPUT" -s -t 1
+    # Focus other monitor
+    mmsg -s -d focusmon,1
+fi
+```
+
+### Client Information Logger
+
+```bash
+#!/bin/bash
+# Log focused client changes
+
+mmsg -w -c | while read -r line; do
+    echo "$(date '+%Y-%m-%d %H:%M:%S') - $line" >> ~/focus.log
+done
+```
+
+## Exit Status
+
+- `0`: Success
+- `1`: Runtime error
+- `2`: Usage error (invalid options)
+
+## Notes
+
+- Commands in set mode exit immediately after applying changes
+- Watch mode runs until interrupted (Ctrl+C) or the compositor quits
+- Tag numbers are 1-indexed in command-line interface but 0-indexed in protocol
+- Binary tag representations use 9 bits (supporting up to 9 tags)
+- Output names come from the Wayland output name event
+
+## See Also
+
+- [IPC Protocol Overview](/reference/ipc-overview) - Protocol architecture and client development
+- [Configuration](/configuration/keybindings) - Configure keybindings for mmsg commands

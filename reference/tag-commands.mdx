@@ -1,0 +1,451 @@
+---
+title: Tag Commands
+description: Tag switching and window tagging commands for Mango Wayland Compositor
+---
+
+## Understanding Tags
+
+Tags in Mango are similar to workspaces or virtual desktops in other window managers, but more flexible:
+
+- Windows can be assigned to multiple tags simultaneously
+- You can view multiple tags at once
+- Each monitor maintains its own tag selection
+- Tags are numbered 1-9 by default
+
+## Tag Viewing Commands
+
+### view (bind_to_view)
+
+Switch to a specific tag.
+
+<ParamField path="arg->ui" type="uint32_t" required>
+  Tag number (1-9) or tag mask
+</ParamField>
+
+<ParamField path="arg->i" type="int">
+  Additional flags for behavior
+</ParamField>
+
+**Examples:**
+```conf
+bind=Ctrl,1,view,1,0
+bind=Ctrl,2,view,2,0
+bind=Ctrl,3,view,3,0
+...
+bind=Ctrl,9,view,9,0
+```
+
+**Behavior:**
+- Switches to the specified tag (workspace)
+- If already on that tag and `view_current_to_back=1`, switches to previous tag
+- Hides windows from other tags
+- Shows windows assigned to the new tag
+- Maintains tag history for easy switching
+
+---
+
+### viewtoleft
+
+Switch to the tag on the left (previous tag).
+
+<ParamField path="arg->i" type="int">
+  Additional flags
+</ParamField>
+
+**Example:**
+```conf
+bind=SUPER,Left,viewtoleft,0
+```
+
+**Behavior:**
+- Switches to previous tag (n-1)
+- Does not wrap around (stops at tag 1)
+- Does not work in overview mode
+- Does not work if viewing all tags (tag 0)
+
+---
+
+### viewtoright
+
+Switch to the tag on the right (next tag).
+
+<ParamField path="arg->i" type="int">
+  Additional flags
+</ParamField>
+
+**Example:**
+```conf
+bind=SUPER,Right,viewtoright,0
+```
+
+**Behavior:**
+- Switches to next tag (n+1)
+- Does not wrap around (stops at tag 9)
+- Does not work in overview mode
+- Does not work if viewing all tags
+
+---
+
+### viewtoleft_have_client
+
+Switch to the previous tag that has windows.
+
+<ParamField path="arg->i" type="int">
+  Additional flags
+</ParamField>
+
+**Example:**
+```conf
+bind=CTRL,Left,viewtoleft_have_client,0
+```
+
+**Behavior:**
+- Searches leftward for a tag with windows
+- Skips empty tags
+- Stops at tag 1
+- Does not work in overview mode
+- Useful for quickly navigating between active workspaces
+
+---
+
+### viewtoright_have_client
+
+Switch to the next tag that has windows.
+
+<ParamField path="arg->i" type="int">
+  Additional flags
+</ParamField>
+
+**Example:**
+```conf
+bind=CTRL,Right,viewtoright_have_client,0
+```
+
+**Behavior:**
+- Searches rightward for a tag with windows
+- Skips empty tags
+- Stops at tag 9
+- Does not work in overview mode
+- Useful for quickly navigating between active workspaces
+
+---
+
+### toggleview
+
+Toggle visibility of a tag (view multiple tags).
+
+<ParamField path="arg->ui" type="uint32_t" required>
+  Tag number to toggle (0 for all tags)
+</ParamField>
+
+**Example:**
+```conf
+bind=SUPER,1,toggleview,1
+bind=SUPER,2,toggleview,2
+```
+
+**Behavior:**
+- Adds or removes tag from current view
+- Allows viewing multiple tags simultaneously
+- Pass 0 to toggle all tags
+- Useful for monitoring multiple workspaces
+- Does not change if result would show no tags
+
+---
+
+### comboview
+
+Combine multiple tags into view.
+
+<ParamField path="arg->ui" type="uint32_t" required>
+  Tag mask to add to view
+</ParamField>
+
+**Example:**
+```conf
+bind=SUPER+CTRL,1,comboview,1
+```
+
+**Behavior:**
+- First invocation switches to specified tag
+- Subsequent invocations add tags to view
+- Creates custom workspace combinations
+- Resets on single tag view
+
+---
+
+### viewcrossmon
+
+Switch to a tag on a different monitor.
+
+<ParamField path="arg->v" type="string" required>
+  Monitor name/spec
+</ParamField>
+
+<ParamField path="arg->ui" type="uint32_t">
+  Tag number
+</ParamField>
+
+**Example:**
+```conf
+bind=SUPER+ALT,1,viewcrossmon,HDMI-A-1,1
+```
+
+**Behavior:**
+- Focuses specified monitor
+- Switches to specified tag on that monitor
+- Useful for multi-monitor setups
+
+---
+
+## Window Tagging Commands
+
+### tag
+
+Move focused window to a specific tag and follow it.
+
+<ParamField path="arg->ui" type="uint32_t" required>
+  Tag number (1-9) or tag mask
+</ParamField>
+
+<ParamField path="arg->i" type="int">
+  Additional flags
+</ParamField>
+
+**Examples:**
+```conf
+bind=Alt,1,tag,1,0
+bind=Alt,2,tag,2,0
+...
+bind=Alt,9,tag,9,0
+```
+
+**Behavior:**
+- Moves focused window to specified tag
+- Switches view to that tag (follows window)
+- Exits scroller stack if window was in one
+- Clears fullscreen state of conflicting windows
+- Updates tag status and arrangement
+
+---
+
+### tagsilent
+
+Move focused window to a specific tag without following it.
+
+<ParamField path="arg->ui" type="uint32_t" required>
+  Tag number (1-9) or tag mask
+</ParamField>
+
+**Example:**
+```conf
+bind=Alt+Shift,1,tagsilent,1
+```
+
+**Behavior:**
+- Moves window to specified tag
+- Does NOT switch view to that tag
+- Useful for organizing windows without disrupting workflow
+- Window disappears from current view
+- Focuses next window in current tag
+
+---
+
+### tagtoleft
+
+Move focused window to previous tag and follow it.
+
+<ParamField path="arg->i" type="int">
+  Additional flags
+</ParamField>
+
+**Example:**
+```conf
+bind=CTRL+SUPER,Left,tagtoleft,0
+```
+
+**Behavior:**
+- Moves window to tag n-1
+- Switches view to that tag
+- Stops at tag 1 (does not wrap)
+- Only works if currently viewing exactly one tag
+
+---
+
+### tagtoright
+
+Move focused window to next tag and follow it.
+
+<ParamField path="arg->i" type="int">
+  Additional flags
+</ParamField>
+
+**Example:**
+```conf
+bind=CTRL+SUPER,Right,tagtoright,0
+```
+
+**Behavior:**
+- Moves window to tag n+1
+- Switches view to that tag
+- Stops at tag 9 (does not wrap)
+- Only works if currently viewing exactly one tag
+
+---
+
+### toggletag
+
+Toggle window's assignment to a tag.
+
+<ParamField path="arg->ui" type="uint32_t" required>
+  Tag number to toggle (INT_MIN for all tags)
+</ParamField>
+
+**Example:**
+```conf
+bind=SUPER+SHIFT,1,toggletag,1
+```
+
+**Behavior:**
+- Adds or removes tag from window's tag assignment
+- Window can be visible on multiple tags
+- Pass INT_MIN to toggle between current tag and all tags
+- Useful for making windows appear in multiple workspaces
+- Does not change if result would assign no tags
+
+---
+
+### tagmon
+
+Move focused window to a different monitor.
+
+<ParamField path="arg->i" type="direction" required>
+  Direction: `LEFT`, `RIGHT`, or monitor name via arg->v
+</ParamField>
+
+<ParamField path="arg->v" type="string">
+  Monitor name/spec
+</ParamField>
+
+<ParamField path="arg->ui" type="uint32_t">
+  Tag number on target monitor (0 to preserve current tags)
+</ParamField>
+
+<ParamField path="arg->i2" type="int">
+  Flag: 1 to preserve tags, 0 to use arg->ui
+</ParamField>
+
+**Examples:**
+```conf
+bind=SUPER+Alt,Left,tagmon,left
+bind=SUPER+Alt,Right,tagmon,right
+```
+
+**Behavior:**
+- Moves window to specified monitor
+- Optionally changes window's tag on target monitor
+- Switches view to target monitor and tag
+- Adjusts window size proportionally for new monitor
+- Centers floating windows on target monitor
+- Warps cursor if `warpcursor=1`
+
+---
+
+### tagcrossmon
+
+Move window to a tag on a different monitor.
+
+<ParamField path="arg->v" type="string" required>
+  Monitor name/spec
+</ParamField>
+
+<ParamField path="arg->ui" type="uint32_t">
+  Tag number
+</ParamField>
+
+**Example:**
+```conf
+bind=SUPER+CTRL,1,tagcrossmon,HDMI-A-1,1
+```
+
+**Behavior:**
+- If monitor matches current monitor, acts like `tag`
+- Otherwise moves window to specified monitor and tag
+- Combines monitor switch with tag assignment
+
+---
+
+## Overview Mode
+
+### toggleoverview
+
+Toggle overview mode (show all windows).
+
+<ParamField path="arg->i" type="int">
+  Mode flag (1 for tab mode)
+</ParamField>
+
+**Example:**
+```conf
+bind=ALT,Tab,toggleoverview,
+```
+
+**Behavior:**
+- Shows all windows across all tags in a grid
+- Temporarily exits floating and fullscreen states
+- Click or focus window to exit overview and switch to that tag
+- Backs up window states and restores them on exit
+- In tab mode with `ov_tab_mode=1`, cycles through windows
+- Does not activate if no windows visible on monitor
+- Maintains tag history for proper restoration
+
+**Configuration:**
+```conf
+hotarea_size=10           # Size of hot corners
+enable_hotarea=1          # Enable hot corner activation
+ov_tab_mode=0            # Tab cycling mode
+overviewgappi=5          # Inner gaps in overview
+overviewgappo=30         # Outer gaps in overview
+```
+
+---
+
+## Tag Configuration
+
+Tags are configured per-monitor in config.conf:
+
+```conf
+# Set default layout for each tag
+tagrule=id:1,layout_name:tile
+tagrule=id:2,layout_name:scroller
+tagrule=id:3,layout_name:grid
+tagrule=id:4,layout_name:tile
+tagrule=id:5,layout_name:tile
+tagrule=id:6,layout_name:tile
+tagrule=id:7,layout_name:tile
+tagrule=id:8,layout_name:tile
+tagrule=id:9,layout_name:tile
+```
+
+## Advanced Tag Features
+
+### Cross-Tag Focus
+
+Enable automatic tag switching when focusing:
+
+```conf
+focus_cross_tag=1      # Switch tags when focusing in direction
+focus_cross_monitor=1  # Switch monitors when focusing
+```
+
+### View History
+
+Mango maintains view history per monitor:
+- Previous tag is tracked via `pertag->prevtag`
+- Pressing current tag again returns to previous (if `view_current_to_back=1`)
+
+## See Also
+
+- [Keybinding Reference](/reference/keybindings)
+- [Window Commands](/reference/window-commands)
+- [Layout Commands](/reference/layout-commands)

@@ -1,0 +1,259 @@
+---
+title: 'NixOS Installation'
+description: 'Install Mango Wayland Compositor on NixOS with Home Manager'
+---
+
+## Installation with Flakes
+
+Mango provides both a NixOS module and a Home Manager module for declarative configuration.
+
+<Steps>
+  <Step title="Add Mango to flake inputs">
+    Add the Mango flake to your `flake.nix` inputs:
+    
+    ```nix flake.nix
+    {
+      inputs = {
+        nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+        home-manager = {
+          url = "github:nix-community/home-manager";
+          inputs.nixpkgs.follows = "nixpkgs";
+        };
+        mango = {
+          url = "github:mangowm/mango";
+          inputs.nixpkgs.follows = "nixpkgs";
+        };
+      };
+      # ...
+    }
+    ```
+  </Step>
+  
+  <Step title="Enable NixOS module">
+    Add the Mango NixOS module to your system configuration:
+    
+    ```nix configuration.nix
+    {
+      imports = [
+        inputs.mango.nixosModules.mango
+      ];
+      
+      programs.mango.enable = true;
+    }
+    ```
+    
+    This installs Mango and sets up necessary Wayland environment components.
+  </Step>
+  
+  <Step title="Configure with Home Manager">
+    Add the Home Manager module for user-specific configuration:
+    
+    ```nix home.nix
+    {
+      imports = [
+        inputs.mango.hmModules.mango
+      ];
+      
+      wayland.windowManager.mango = {
+        enable = true;
+        settings = ''
+          # Your Mango configuration
+          # See config.conf documentation
+          
+          # Example keybindings
+          bind = alt,return,exec,foot
+          bind = alt,space,exec,rofi -show drun
+          bind = alt,q,killclient
+        '';
+        autostart_sh = ''
+          # Autostart applications
+          # No shebang needed
+          
+          waybar &
+          swaybg -i ~/wallpaper.png &
+          mako &
+        '';
+      };
+    }
+    ```
+  </Step>
+  
+  <Step title="Rebuild your system">
+    Apply the configuration:
+    
+    ```bash
+    sudo nixos-rebuild switch --flake .#your-hostname
+    ```
+  </Step>
+</Steps>
+
+## Complete Flake Example
+
+Here's a complete example using flake-parts:
+
+```nix flake.nix
+{
+  inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    home-manager = {
+      url = "github:nix-community/home-manager";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    flake-parts.url = "github:hercules-ci/flake-parts";
+    mango = {
+      url = "github:mangowm/mango";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+  };
+  
+  outputs = inputs@{ self, flake-parts, ... }:
+    flake-parts.lib.mkFlake { inherit inputs; } {
+      debug = true;
+      systems = [ "x86_64-linux" ];
+      
+      flake = {
+        nixosConfigurations = {
+          hostname = inputs.nixpkgs.lib.nixosSystem {
+            system = "x86_64-linux";
+            modules = [
+              inputs.home-manager.nixosModules.home-manager
+              
+              # Add mango nixos module
+              inputs.mango.nixosModules.mango
+              {
+                programs.mango.enable = true;
+              }
+              
+              {
+                home-manager = {
+                  useGlobalPkgs = true;
+                  useUserPackages = true;
+                  backupFileExtension = "backup";
+                  users."username".imports = [
+                    # Add mango hm module
+                    inputs.mango.hmModules.mango
+                    
+                    ({ ... }: {
+                      wayland.windowManager.mango = {
+                        enable = true;
+                        settings = ''
+                          # see config.conf
+                        '';
+                        autostart_sh = ''
+                          # see autostart.sh
+                          # Note: here no need to add shebang
+                        '';
+                      };
+                    })
+                  ];
+                };
+              }
+            ];
+          };
+        };
+      };
+    };
+}
+```
+
+## Build Inputs
+
+The Nix package automatically includes these dependencies:
+
+**Build-time dependencies:**
+- meson
+- ninja
+- pkg-config
+- wayland-scanner
+
+**Runtime dependencies:**
+- libinput (>=1.27.1)
+- libxcb
+- libxkbcommon
+- pcre2
+- pixman
+- wayland (>=1.23.1)
+- wayland-protocols
+- wlroots_0_19 (>=0.19.0)
+- scenefx (>=0.4.1)
+- libGL
+
+**XWayland support (enabled by default):**
+- libX11
+- libxcb-wm
+- xwayland
+
+## Configuration Options
+
+<ParamField path="programs.mango.enable" type="boolean" default="false">
+  Enable Mango compositor system-wide
+</ParamField>
+
+<ParamField path="wayland.windowManager.mango.enable" type="boolean" default="false">
+  Enable Mango for the current user
+</ParamField>
+
+<ParamField path="wayland.windowManager.mango.settings" type="string" default="">
+  Mango configuration content (equivalent to config.conf)
+</ParamField>
+
+<ParamField path="wayland.windowManager.mango.autostart_sh" type="string" default="">
+  Autostart script content (no shebang needed)
+</ParamField>
+
+## Suggested Packages
+
+Add these packages to your configuration for a complete environment:
+
+```nix
+{ pkgs, ... }:
+{
+  home.packages = with pkgs; [
+    # Terminal
+    foot
+    
+    # Launcher
+    rofi-wayland
+    
+    # Status bar
+    waybar
+    
+    # Wallpaper
+    swaybg
+    
+    # Clipboard
+    wl-clipboard
+    wl-clip-persist
+    cliphist
+    
+    # Screenshots
+    grim
+    slurp
+    satty
+    
+    # Notifications
+    mako
+    # or
+    # swaync
+    
+    # Night light
+    wlsunset
+    # or
+    # gammastep
+    
+    # Authentication
+    xfce.xfce4-settings  # for xfce-polkit
+  ];
+}
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Configuration" icon="gear" href="/configuration/overview">
+    Configure Mango to your preferences
+  </Card>
+  <Card title="Keybindings" icon="keyboard" href="/configuration/keybindings">
+    Learn default keybindings and create custom ones
+  </Card>
+</CardGroup>

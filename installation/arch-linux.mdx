@@ -1,0 +1,81 @@
+---
+title: 'Arch Linux Installation'
+description: 'Install Mango Wayland Compositor on Arch Linux'
+---
+
+## Installation via AUR
+
+Mango is available in the Arch User Repository (AUR). You can install it using an AUR helper like `yay` or manually.
+
+<Steps>
+  <Step title="Install using yay">
+    The easiest way to install Mango on Arch Linux is using an AUR helper:
+    
+    ```bash
+    yay -S mangowm-git
+    ```
+    
+    This will automatically handle all dependencies and build the package.
+  </Step>
+  
+  <Step title="Manual installation">
+    Alternatively, you can manually download and build the package:
+    
+    ```bash
+    git clone https://aur.archlinux.org/mangowm-git.git
+    cd mangowm-git
+    makepkg -si
+    ```
+  </Step>
+  
+  <Step title="Install suggested tools">
+    Install recommended components for a complete Wayland environment:
+    
+    ```bash
+    yay -S rofi foot xdg-desktop-portal-wlr swaybg waybar \
+      wl-clip-persist cliphist wl-clipboard wlsunset xfce-polkit \
+      swaync pamixer brightnessctl grim slurp satty
+    ```
+  </Step>
+  
+  <Step title="Launch Mango">
+    After installation, you can start Mango from a TTY:
+    
+    ```bash
+    mango
+    ```
+    
+    Or select it from your display manager's session list.
+  </Step>
+</Steps>
+
+## Dependencies
+
+The AUR package will automatically install these dependencies:
+
+- wayland
+- wayland-protocols
+- libinput
+- libdrm
+- libxkbcommon
+- pixman
+- libdisplay-info
+- libliftoff
+- hwdata
+- seatd
+- pcre2
+- xorg-xwayland
+- libxcb
+- wlroots (0.19.2)
+- scenefx (0.4.1)
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Configuration" icon="gear" href="/configuration/overview">
+    Configure Mango to your preferences
+  </Card>
+  <Card title="Keybindings" icon="keyboard" href="/configuration/keybindings">
+    Learn default keybindings and create custom ones
+  </Card>
+</CardGroup>

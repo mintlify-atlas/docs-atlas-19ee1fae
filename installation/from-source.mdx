@@ -1,0 +1,285 @@
+---
+title: 'Building from Source'
+description: 'Build and install Mango Wayland Compositor from source'
+---
+
+## Prerequisites
+
+Building Mango from source requires specific versions of wlroots and scenefx, along with development tools.
+
+### Build Tools
+
+Install the required build tools:
+
+<CodeGroup>
+```bash Arch Linux
+sudo pacman -S git meson ninja pkg-config
+```
+
+```bash Debian/Ubuntu
+sudo apt install git meson ninja-build pkg-config
+```
+
+```bash Fedora
+sudo dnf install git meson ninja-build pkg-config
+```
+</CodeGroup>
+
+## Build Dependencies
+
+Mango requires these dependencies (from meson.build):
+
+<AccordionGroup>
+  <Accordion title="Required Dependencies">
+    - **wayland** (>=1.23.1) - Wayland compositor library
+    - **wayland-protocols** - Wayland protocol definitions
+    - **libinput** (>=1.27.1) - Input device management
+    - **libxkbcommon** - Keyboard handling
+    - **pcre2** - Regular expression library
+    - **pixman** - Pixel manipulation library
+    - **wlroots** (0.19.x) - Wayland compositor library
+    - **scenefx** (>=0.4.1) - Scene graph and effects library
+  </Accordion>
+  
+  <Accordion title="Optional Dependencies">
+    - **xorg-xwayland** - X11 application support
+    - **libxcb** - X protocol C bindings
+    - **xcb-icccm** - X window manager utilities
+  </Accordion>
+</AccordionGroup>
+
+### Install Dependencies
+
+<CodeGroup>
+```bash Arch Linux
+sudo pacman -S wayland wayland-protocols libinput libxkbcommon \
+  pcre2 pixman xorg-xwayland libxcb xcb-util-wm
+```
+
+```bash Debian/Ubuntu
+sudo apt install libwayland-dev wayland-protocols libinput-dev \
+  libxkbcommon-dev libpcre2-dev libpixman-1-dev xwayland \
+  libxcb1-dev libxcb-icccm4-dev
+```
+
+```bash Fedora
+sudo dnf install wayland-devel wayland-protocols-devel libinput-devel \
+  libxkbcommon-devel pcre2-devel pixman-devel xorg-x11-server-Xwayland \
+  libxcb-devel xcb-util-wm-devel
+```
+</CodeGroup>
+
+## Installation Steps
+
+<Steps>
+  <Step title="Build and install wlroots">
+    Mango requires wlroots 0.19.2:
+    
+    ```bash
+    git clone -b 0.19.2 https://gitlab.freedesktop.org/wlroots/wlroots.git
+    cd wlroots
+    meson build -Dprefix=/usr
+    sudo ninja -C build install
+    cd ..
+    ```
+    
+    <Warning>
+      Make sure to use version 0.19.2 specifically, as Mango depends on this version.
+    </Warning>
+  </Step>
+  
+  <Step title="Build and install scenefx">
+    Mango requires scenefx 0.4.1 or later:
+    
+    ```bash
+    git clone -b 0.4.1 https://github.com/wlrfx/scenefx.git
+    cd scenefx
+    meson build -Dprefix=/usr
+    sudo ninja -C build install
+    cd ..
+    ```
+  </Step>
+  
+  <Step title="Clone Mango repository">
+    Get the latest Mango source code:
+    
+    ```bash
+    git clone https://github.com/mangowm/mango.git
+    cd mango
+    ```
+  </Step>
+  
+  <Step title="Configure build">
+    Configure the build with meson:
+    
+    <Tabs>
+      <Tab title="Standard Build">
+        ```bash
+        meson build -Dprefix=/usr
+        ```
+      </Tab>
+      
+      <Tab title="Without XWayland">
+        ```bash
+        meson build -Dprefix=/usr -Dxwayland=disabled
+        ```
+      </Tab>
+      
+      <Tab title="Debug Build">
+        ```bash
+        meson build -Dprefix=/usr -Dasan=true
+        ```
+        
+        <Note>
+          Debug builds enable AddressSanitizer for development.
+        </Note>
+      </Tab>
+    </Tabs>
+  </Step>
+  
+  <Step title="Build and install">
+    Compile and install Mango:
+    
+    ```bash
+    sudo ninja -C build install
+    ```
+    
+    This installs:
+    - `mango` - The compositor binary
+    - `mmsg` - IPC message tool
+    - Desktop files and configuration
+  </Step>
+  
+  <Step title="Verify installation">
+    Check that Mango is installed correctly:
+    
+    ```bash
+    mango --version
+    ```
+    
+    You should see the version information with commit hash.
+  </Step>
+</Steps>
+
+## Build Options
+
+Mango supports these meson build options:
+
+<ParamField path="prefix" type="string" default="/usr/local">
+  Installation prefix
+</ParamField>
+
+<ParamField path="xwayland" type="feature" default="enabled">
+  Enable XWayland support for X11 applications
+</ParamField>
+
+<ParamField path="asan" type="boolean" default="false">
+  Enable AddressSanitizer for debugging
+</ParamField>
+
+## Installed Files
+
+The installation creates these files:
+
+```
+/usr/bin/mango                              # Main compositor
+/usr/bin/mmsg                               # IPC tool
+/usr/share/wayland-sessions/mango.desktop   # Session file
+/usr/share/xdg-desktop-portal/mango-portals.conf
+/etc/mango/config.conf                      # Default config
+```
+
+## Configuration
+
+After installation, copy the default configuration to your user directory:
+
+```bash
+mkdir -p ~/.config/mango
+cp /etc/mango/config.conf ~/.config/mango/config.conf
+```
+
+Edit `~/.config/mango/config.conf` to customize your setup.
+
+## Updating
+
+To update to the latest version:
+
+```bash
+cd mango
+git pull
+meson build -Dprefix=/usr --reconfigure
+sudo ninja -C build install
+```
+
+## Uninstalling
+
+To remove Mango:
+
+```bash
+cd mango/build
+sudo ninja uninstall
+```
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="pkg-config cannot find wlroots">
+    Make sure you installed wlroots 0.19.2 with the correct prefix:
+    
+    ```bash
+    pkg-config --modversion wlroots-0.19
+    ```
+    
+    If not found, ensure `/usr/lib/pkgconfig` is in your `PKG_CONFIG_PATH`:
+    
+    ```bash
+    export PKG_CONFIG_PATH=/usr/lib/pkgconfig:$PKG_CONFIG_PATH
+    ```
+  </Accordion>
+  
+  <Accordion title="scenefx not found">
+    Verify scenefx installation:
+    
+    ```bash
+    pkg-config --modversion scenefx-0.4
+    ```
+    
+    If missing, rebuild scenefx with the correct prefix.
+  </Accordion>
+  
+  <Accordion title="Build fails with version mismatch">
+    Mango requires specific versions:
+    - wlroots: 0.19.0 or later (0.19.2 recommended)
+    - scenefx: 0.4.1 or later
+    - wayland: 1.23.1 or later
+    - libinput: 1.27.1 or later
+    
+    Check installed versions and rebuild dependencies if needed.
+  </Accordion>
+  
+  <Accordion title="Permission denied during install">
+    Use `sudo` for installation:
+    
+    ```bash
+    sudo ninja -C build install
+    ```
+    
+    Or configure with a user-writable prefix:
+    
+    ```bash
+    meson build -Dprefix=$HOME/.local
+    ninja -C build install
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Configuration" icon="gear" href="/configuration/overview">
+    Configure Mango to your preferences
+  </Card>
+  <Card title="Keybindings" icon="keyboard" href="/configuration/keybindings">
+    Learn default keybindings and create custom ones
+  </Card>
+</CardGroup>

@@ -1,0 +1,168 @@
+---
+title: Configuration Overview
+description: Understanding Mango's configuration file structure and location
+---
+
+## Configuration File Location
+
+Mango uses a single configuration file to manage all compositor settings. The configuration file is typically located at:
+
+```
+~/.config/mango/config.conf
+```
+
+For system-wide default configuration, refer to:
+
+```
+/usr/share/mango/config.conf
+```
+
+## Configuration File Structure
+
+The configuration file uses a simple key-value format with the following syntax:
+
+```conf
+# Comments start with #
+option_name=value
+
+# Multiple values for keybindings
+bind=MODIFIER,key,action,parameters
+
+# Rules use comma-separated parameters
+tagrule=id:1,layout_name:tile
+```
+
+## Configuration Sections
+
+Mango's configuration is organized into several logical sections:
+
+### Window Effects
+Control visual effects like blur, shadows, corner radius, and opacity.
+
+```conf
+blur=0
+shadows=0
+border_radius=6
+focused_opacity=1.0
+```
+
+See [Window Effects](/configuration/window-effects) for details.
+
+### Animations
+Configure animation types, durations, and curves for various window actions.
+
+```conf
+animations=1
+animation_type_open=slide
+animation_duration_open=400
+```
+
+See [Animations](/configuration/animations) for details.
+
+### Appearance
+Set colors, gaps, borders, and visual styling.
+
+```conf
+gappih=5
+borderpx=4
+focuscolor=0xc9b890ff
+```
+
+See [Appearance](/configuration/appearance) for details.
+
+### Input Devices
+Configure keyboard, mouse, and trackpad behavior.
+
+```conf
+repeat_rate=25
+tap_to_click=1
+mouse_natural_scrolling=0
+```
+
+See [Input Devices](/configuration/input-devices) for details.
+
+### Keybindings
+Define keyboard shortcuts, mouse bindings, and scroll wheel actions.
+
+```conf
+bind=SUPER,r,reload_config
+mousebind=SUPER,btn_left,moveresize,curmove
+axisbind=SUPER,UP,viewtoleft_have_client
+```
+
+See [Keybindings](/configuration/keybindings) for details.
+
+### Rules
+Set per-tag and per-layer rules for layouts and behaviors.
+
+```conf
+tagrule=id:1,layout_name:tile
+layerrule=animation_type_open:zoom,layer_name:rofi
+```
+
+See [Rules](/configuration/rules) for details.
+
+## Reloading Configuration
+
+After making changes to your configuration file, reload it with:
+
+```conf
+bind=SUPER,r,reload_config
+```
+
+Or run the following command:
+
+```bash
+mangoctl reload
+```
+
+<Note>
+Some settings (like trackpad and mouse configurations) require logging out and back in to take effect.
+</Note>
+
+## Color Format
+
+Colors in Mango use hexadecimal RGBA format:
+
+```
+0xRRGGBBAA
+```
+
+- `RR` - Red component (00-FF)
+- `GG` - Green component (00-FF)
+- `BB` - Blue component (00-FF)
+- `AA` - Alpha/opacity (00-FF)
+
+**Examples:**
+
+```conf
+focuscolor=0xc9b890ff    # Beige, fully opaque
+rootcolor=0x201b14ff      # Dark brown, fully opaque
+bordercolor=0x444444ff    # Dark gray, fully opaque
+```
+
+## Boolean Values
+
+Boolean options use `1` for enabled and `0` for disabled:
+
+```conf
+animations=1              # Enabled
+blur=0                    # Disabled
+```
+
+## Numeric Values
+
+Numeric values can be integers or floating-point numbers:
+
+```conf
+borderpx=4                      # Integer
+default_mfact=0.55             # Float
+animation_duration_open=400    # Integer (milliseconds)
+```
+
+## Documentation Resources
+
+For more configuration options and examples, visit:
+
+- [Mango Wiki](https://github.com/DreamMaoMao/mango/wiki/)
+- Use `xev` or `wev` commands to find key names for bindings

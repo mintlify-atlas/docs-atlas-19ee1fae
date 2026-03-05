@@ -1,80 +1,412 @@
 ---
-title: "Quickstart"
-description: "Start building awesome documentation in minutes"
+title: Quick Start
+description: Get Mango Wayland Compositor running in minutes
 ---
 
-## Get started in three steps
+## Prerequisites
 
-Get your documentation site running locally and make your first customization.
+Before installing Mango, ensure your system has the required dependencies.
 
-### Step 1: Set up your local environment
+### Required Dependencies
 
-<AccordionGroup>
-  <Accordion icon="copy" title="Clone your docs locally">
-    During the onboarding process, you created a GitHub repository with your docs content if you didn't already have one. You can find a link to this repository in your [dashboard](https://dashboard.mintlify.com).
+<CodeGroup>
+
+```bash Arch Linux
+sudo pacman -S wayland wayland-protocols libinput libdrm libxkbcommon \
+  pixman libdisplay-info libliftoff hwdata seatd pcre2 \
+  xorg-xwayland libxcb
+```
+
+```bash Fedora
+sudo dnf install wayland-devel wayland-protocols-devel libinput-devel \
+  libdrm-devel libxkbcommon-devel pixman-devel libdisplay-info-devel \
+  libliftoff-devel hwdata seatd-devel pcre2-devel xorg-x11-server-Xwayland \
+  libxcb-devel
+```
+
+```bash Ubuntu/Debian
+sudo apt install libwayland-dev wayland-protocols libinput-dev libdrm-dev \
+  libxkbcommon-dev libpixman-1-dev libdisplay-info-dev libliftoff-dev \
+  hwdata libseat-dev libpcre2-dev xwayland libxcb1-dev
+```
+
+</CodeGroup>
+
+## Installation
+
+Choose the installation method that works best for your distribution.
+
+<Tabs>
+  <Tab title="Arch Linux">
+    ### Using AUR Helper
     
-    To clone the repository locally so that you can make and preview changes to your docs, follow the [Cloning a repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) guide in the GitHub docs.
-  </Accordion>
-  <Accordion icon="rectangle-terminal" title="Start the preview server">
-    1. Install the Mintlify CLI: `npm i -g mint`
-    2. Navigate to your docs directory and run: `mint dev`
-    3. Open `http://localhost:3000` to see your docs live!
+    The easiest way to install on Arch Linux is through the AUR:
     
-    <Tip>Your preview updates automatically as you edit files.</Tip>
-  </Accordion>
-</AccordionGroup>
-
-### Step 2: Deploy your changes
-
-<AccordionGroup>
-  <Accordion icon="github" title="Install our GitHub app">
-    Install the Mintlify GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app).
+    ```bash
+    yay -S mangowm-git
+    ```
     
-    Our GitHub app automatically deploys your changes to your docs site, so you don't need to manage deployments yourself.
-</Accordion>
-<Accordion icon="palette" title="Update your site name and colors">
-    For a first change, let's update the name and colors of your docs site.
+    Or with paru:
+    
+    ```bash
+    paru -S mangowm-git
+    ```
+    
+    <Note>
+    The package is also available for manual download from [AUR](https://aur.archlinux.org/packages/mangowm-git)
+    </Note>
+  </Tab>
+  
+  <Tab title="Gentoo">
+    ### Using GURU Repository
+    
+    <Steps>
+      <Step title="Add GURU repository">
+        ```bash
+        emerge --ask --verbose eselect-repository
+        eselect repository enable guru
+        emerge --sync guru
+        ```
+      </Step>
+      
+      <Step title="Accept keywords">
+        Add `gui-libs/scenefx` and `gui-wm/mangowm` to `/etc/portage/package.accept_keywords`:
+        ```bash
+        echo "gui-libs/scenefx ~amd64" >> /etc/portage/package.accept_keywords
+        echo "gui-wm/mangowm ~amd64" >> /etc/portage/package.accept_keywords
+        ```
+      </Step>
+      
+      <Step title="Install Mango">
+        ```bash
+        emerge --ask --verbose gui-wm/mangowm
+        ```
+      </Step>
+    </Steps>
+  </Tab>
+  
+  <Tab title="Fedora">
+    ### Using Terra Repository
+    
+    <Steps>
+      <Step title="Add Terra Repository">
+        Follow instructions at [terra.fyralabs.com](https://terra.fyralabs.com/)
+      </Step>
+      
+      <Step title="Install Mango">
+        ```bash
+        sudo dnf install mangowm
+        ```
+      </Step>
+    </Steps>
+  </Tab>
+  
+  <Tab title="Guix System">
+    ### Using Guix Channel
+    
+    <Steps>
+      <Step title="Add Mango channel">
+        Edit `~/.config/guix/channels.scm`:
+        ```scheme
+        ;; In $HOME/.config/guix/channels.scm
+        (cons (channel
+                (name 'mangowm)
+                (url "https://github.com/mangowm/mango.git")
+                (branch "main"))
+              ... ;; Your other channels
+              %default-channels)
+        ```
+      </Step>
+      
+      <Step title="Update and install">
+        ```bash
+        guix pull
+        guix install mangowm
+        ```
+      </Step>
+    </Steps>
+  </Tab>
+  
+  <Tab title="Build from Source">
+    ### Manual Build
+    
+    <Warning>
+    Building from source requires compiling wlroots and scenefx dependencies first.
+    </Warning>
+    
+    <Steps>
+      <Step title="Install wlroots 0.19.2">
+        ```bash
+        git clone -b 0.19.2 https://gitlab.freedesktop.org/wlroots/wlroots.git
+        cd wlroots
+        meson build -Dprefix=/usr
+        sudo ninja -C build install
+        ```
+      </Step>
+      
+      <Step title="Install scenefx 0.4.1">
+        ```bash
+        git clone -b 0.4.1 https://github.com/wlrfx/scenefx.git
+        cd scenefx
+        meson build -Dprefix=/usr
+        sudo ninja -C build install
+        ```
+      </Step>
+      
+      <Step title="Build and install Mango">
+        ```bash
+        git clone https://github.com/mangowm/mango.git
+        cd mango
+        meson build -Dprefix=/usr
+        sudo ninja -C build install
+        ```
+        
+        <Note>
+        Mango builds in just a few seconds!
+        </Note>
+      </Step>
+    </Steps>
+  </Tab>
+</Tabs>
 
-    1. Open `docs.json` in your editor.
-    2. Change the `"name"` field to your project name.
-    3. Update the `"colors"` to match your brand.
-    4. Save and see your changes instantly at `http://localhost:3000`.
+## Initial Configuration
 
-    <Tip>Try changing the primary color to see an immediate difference!</Tip>
-  </Accordion>
-</AccordionGroup>
+Mango uses an external configuration file for easy customization without recompilation.
 
-### Step 3: Go live
+<Steps>
+  <Step title="Create config directory">
+    ```bash
+    mkdir -p ~/.config/mango
+    ```
+  </Step>
+  
+  <Step title="Copy default configuration">
+    The default config is installed to `/etc/mango/config.conf`. Copy it to your config directory:
+    
+    ```bash
+    cp /etc/mango/config.conf ~/.config/mango/config.conf
+    ```
+    
+    Or download a pre-configured setup:
+    
+    ```bash
+    # Daily configuration
+    git clone https://github.com/DreamMaoMao/mango-config.git ~/.config/mango
+    
+    # Or DMS configuration
+    git clone -b dms https://github.com/DreamMaoMao/mango-config.git ~/.config/mango
+    ```
+  </Step>
+  
+  <Step title="Review basic settings">
+    Open `~/.config/mango/config.conf` and review key settings:
+    
+    ```conf config.conf
+    # Window effects
+    blur=0
+    shadows=0
+    border_radius=6
+    
+    # Animations
+    animations=1
+    animation_duration_open=400
+    animation_duration_close=800
+    
+    # Keyboard layout
+    xkb_rules_layout=us
+    
+    # Appearance
+    borderpx=4
+    focuscolor=0xc9b890ff
+    ```
+  </Step>
+</Steps>
 
-<Accordion icon="rocket" title="Publish your docs">
-  1. Commit and push your changes.
-  2. Your docs will update and be live in moments!
-</Accordion>
+## Essential Tools
 
-## Next steps
+Mango is a compositor only - you'll need additional tools for a complete desktop experience.
 
-Now that you have your docs running, explore these key features:
+### Recommended Setup
+
+<CodeGroup>
+
+```bash Minimal Setup
+# Terminal emulator
+yay -S foot
+
+# Application launcher
+yay -S rofi
+
+# Wallpaper
+yay -S swaybg
+
+# Clipboard
+yay -S wl-clipboard
+```
+
+```bash Complete Setup
+# Core tools
+yay -S rofi foot xdg-desktop-portal-wlr swaybg waybar \
+  wl-clip-persist cliphist wl-clipboard wlsunset xfce-polkit \
+  swaync pamixer brightnessctl grim slurp
+
+# Optional but recommended
+yay -S swayidle swaylock-effects swayosd wlogout
+```
+
+</CodeGroup>
+
+### Tool Categories
 
 <CardGroup cols={2}>
-
-<Card title="Write Content" icon="pen-to-square" href="/essentials/markdown">
-  Learn MDX syntax and start writing your documentation.
-</Card>
-
-<Card title="Customize style" icon="palette" href="/essentials/settings">
-  Make your docs match your brand perfectly.
-</Card>
-
-<Card title="Add code examples" icon="square-code" href="/essentials/code">
-  Include syntax-highlighted code blocks.
-</Card>
-
-<Card title="API documentation" icon="code" href="/api-reference/introduction">
-  Auto-generate API docs from OpenAPI specs.
-</Card>
-
+  <Card title="Terminal" icon="terminal">
+    foot, wezterm, alacritty, kitty, ghostty
+  </Card>
+  
+  <Card title="Launcher" icon="rocket">
+    rofi, bemenu, wmenu, fuzzel
+  </Card>
+  
+  <Card title="Status Bar" icon="chart-bar">
+    waybar (preferred), eww, quickshell, ags
+  </Card>
+  
+  <Card title="Notifications" icon="bell">
+    swaync, dunst, mako
+  </Card>
 </CardGroup>
 
-<Note>
-  **Need help?** See our [full documentation](https://mintlify.com/docs) or join our [community](https://mintlify.com/community).
-</Note>
+## First Launch
+
+Now you're ready to start Mango!
+
+<Steps>
+  <Step title="Launch from TTY">
+    From a TTY (Ctrl+Alt+F2), run:
+    
+    ```bash
+    mango
+    ```
+    
+    Or add to your display manager configuration.
+  </Step>
+  
+  <Step title="Try default keybindings">
+    <CodeGroup>
+    
+    ```text Window Management
+    Alt+Return       - Open foot terminal
+    Alt+Space        - Open rofi launcher
+    Alt+Q            - Close window
+    Alt+Arrow Keys   - Focus direction
+    Alt+Backslash    - Toggle floating
+    ```
+    
+    ```text Tags
+    Ctrl+1-9         - Switch to tag 1-9
+    Alt+1-9          - Move window to tag and follow
+    Ctrl+Super+←/→   - Move to adjacent tag
+    ```
+    
+    ```text Layouts
+    Super+N          - Switch layout
+    Alt+E            - Set scroller proportion to 1.0
+    Alt+X            - Switch proportion preset
+    ```
+    
+    ```text System
+    Super+R          - Reload configuration
+    Super+M          - Quit Mango
+    Alt+Tab          - Toggle overview
+    ```
+    
+    </CodeGroup>
+    
+    <Note>
+    All keybindings can be customized in `config.conf`. Changes take effect after `Super+R` reload!
+    </Note>
+  </Step>
+  
+  <Step title="Customize your setup">
+    Edit `~/.config/mango/config.conf` to:
+    
+    - Change keyboard layout: `xkb_rules_layout=us`
+    - Enable effects: `blur=1`, `shadows=1`
+    - Adjust animation speeds
+    - Configure trackpad settings
+    - Set your preferred colors
+    
+    Press `Super+R` to reload without restarting!
+  </Step>
+</Steps>
+
+## Quick Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Mango won't start">
+    Check that you have all dependencies installed:
+    ```bash
+    ldd $(which mango)
+    ```
+    
+    Verify wlroots version:
+    ```bash
+    pkg-config --modversion wlroots-0.19
+    ```
+  </Accordion>
+  
+  <Accordion title="No keybindings working">
+    Ensure your config file exists:
+    ```bash
+    ls -la ~/.config/mango/config.conf
+    ```
+    
+    Check for syntax errors in your config.
+  </Accordion>
+  
+  <Accordion title="XWayland apps not working">
+    Ensure xwayland is installed:
+    ```bash
+    which Xwayland
+    ```
+    
+    Mango requires `xorg-xwayland` package.
+  </Accordion>
+  
+  <Accordion title="Visual effects not working">
+    Verify scenefx is installed:
+    ```bash
+    pkg-config --modversion scenefx-0.4
+    ```
+    
+    Check that effects are enabled in config:
+    ```conf
+    blur=1
+    shadows=1
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Configuration Guide" icon="gear" href="/configuration/overview">
+    Deep dive into all configuration options
+  </Card>
+  
+  <Card title="Keybindings" icon="keyboard" href="/reference/keybindings">
+    Learn all available commands and create custom bindings
+  </Card>
+  
+  <Card title="Layouts" icon="table-layout" href="/features/layouts">
+    Explore different window layouts and their use cases
+  </Card>
+  
+  <Card title="IPC & Scripting" icon="code" href="/features/ipc">
+    Control Mango programmatically with IPC
+  </Card>
+</CardGroup>
+
+<Card title="Need Help?" icon="discord" href="https://discord.gg/CPjbDxesh5">
+  Join our Discord community for support and discussions
+</Card>

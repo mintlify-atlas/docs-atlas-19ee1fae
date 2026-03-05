@@ -1,0 +1,350 @@
+---
+title: "Window Layouts"
+description: "Comprehensive guide to all 12 window layouts in Mango Wayland Compositor"
+---
+
+Mango provides 12 flexible window layouts that can be switched dynamically and configured per tag. Each layout is optimized for different workflows and screen arrangements.
+
+## Available Layouts
+
+<CardGroup cols={2}>
+  <Card title="Tile" icon="table-cells">
+    Master-stack tiling layout with configurable master window and stack area
+  </Card>
+  <Card title="Scroller" icon="arrows-left-right">
+    Horizontal scrolling layout perfect for wide monitors and code review
+  </Card>
+  <Card title="Monocle" icon="window-maximize">
+    Single window occupies entire screen, cycles through windows
+  </Card>
+  <Card title="Grid" icon="grid">
+    Automatic grid arrangement that adapts to number of windows
+  </Card>
+  <Card title="Deck" icon="layer-group">
+    Card-style layout with master window and stacked background windows
+  </Card>
+  <Card title="Center Tile" icon="align-center">
+    Master window centered with stacked windows on both sides
+  </Card>
+  <Card title="Vertical Tile" icon="bars">
+    Vertical master-stack arrangement for portrait monitors
+  </Card>
+  <Card title="Vertical Grid" icon="table-cells-large">
+    Grid layout optimized for vertical arrangements
+  </Card>
+  <Card title="Vertical Scroller" icon="arrows-up-down">
+    Vertical scrolling layout for stacked workflows
+  </Card>
+  <Card title="Vertical Deck" icon="layer-group">
+    Vertical variant of deck layout
+  </Card>
+  <Card title="Right Tile" icon="align-right">
+    Master window on right side with stack on left
+  </Card>
+  <Card title="TGMix" icon="shapes">
+    Mixed tiling and grid layout combining best of both
+  </Card>
+</CardGroup>
+
+## Layout Configuration
+
+### Setting Default Layouts Per Tag
+
+Each tag can have its own default layout configured in `config.conf`:
+
+```conf
+# Layout options: tile, scroller, grid, deck, monocle, center_tile, 
+# vertical_tile, vertical_scroller, vertical_grid, vertical_deck, 
+# right_tile, tgmix
+
+tagrule=id:1,layout_name:tile
+tagrule=id:2,layout_name:scroller
+tagrule=id:3,layout_name:grid
+tagrule=id:4,layout_name:monocle
+tagrule=id:5,layout_name:deck
+```
+
+### Switching Layouts
+
+Switch between layouts dynamically:
+
+```conf
+# Cycle through available layouts
+bind=SUPER,n,switch_layout
+```
+
+## Master-Stack Layouts
+
+Layouts like tile, vertical_tile, center_tile, and right_tile use a master-stack paradigm with configurable parameters.
+
+### Master-Stack Configuration
+
+```conf
+# New windows become master window
+new_is_master=1
+
+# Master area takes 55% of screen
+default_mfact=0.55
+
+# Number of windows in master area
+default_nmaster=1
+
+# Smart gaps (disable when single window)
+smartgaps=0
+```
+
+### Tile Layout
+
+The classic tiling window manager layout:
+- Master window on the left
+- Stack windows arranged vertically on the right
+- Perfect for code editing with reference material
+
+**Key Features:**
+- Configurable master area size via `default_mfact`
+- Support for multiple master windows via `default_nmaster`
+- Automatic reflow when windows are added/removed
+
+### Center Tile Layout
+
+Master window centered with symmetrical stack areas:
+- Master window in the center
+- Stack windows split between left and right sides
+- Ideal for focused work with peripheral references
+
+### Vertical Tile Layout
+
+Vertical variant of tile layout:
+- Master window on top
+- Stack windows arranged horizontally below
+- Optimized for ultra-wide monitors
+
+### Right Tile Layout
+
+Mirrored version of tile layout:
+- Master window on the right
+- Stack windows on the left
+- Useful for left-handed workflows or specific monitor arrangements
+
+## Scroller Layouts
+
+Scroller layouts arrange windows in a scrollable row or column, perfect for reviewing multiple items sequentially.
+
+### Scroller Configuration
+
+```conf
+# Maximum windows visible at once
+scroller_structs=20
+
+# Default window proportion (80% of available space)
+scroller_default_proportion=0.8
+
+# Keep focused window centered
+scroller_focus_center=0
+
+# Prefer centering windows when possible
+scroller_prefer_center=0
+
+# Focus window under pointer at screen edges
+edge_scroller_pointer_focus=1
+
+# Single window takes full space
+scroller_default_proportion_single=1.0
+
+# Preset proportions for quick switching
+scroller_proportion_preset=0.5,0.8,1.0
+```
+
+### Scroller Layout (Horizontal)
+
+Windows arranged in a horizontal scrollable row:
+- Side-by-side window arrangement
+- Smooth scrolling animations
+- Configurable window proportions
+
+**Keybindings:**
+```conf
+# Set window proportion to 100%
+bind=ALT,e,set_proportion,1.0
+
+# Cycle through proportion presets
+bind=ALT,x,switch_proportion_preset,
+```
+
+### Vertical Scroller Layout
+
+Windows arranged in a vertical scrollable column:
+- Top-to-bottom arrangement
+- Same proportion controls as horizontal scroller
+- Great for document review workflows
+
+## Grid Layouts
+
+Grid layouts automatically arrange windows in optimal grid patterns.
+
+### Grid Layout
+
+Automatic grid arrangement:
+- Dynamically calculates optimal rows and columns
+- All windows equal size
+- Adapts as windows are added or removed
+
+**Use Cases:**
+- Monitoring dashboards
+- Multiple terminal sessions
+- Image galleries
+- Video call layouts
+
+### Vertical Grid Layout
+
+Grid optimized for vertical arrangements:
+- Prioritizes vertical splits
+- Better for portrait monitors
+- Same automatic sizing as standard grid
+
+## Deck Layouts
+
+Deck layouts emphasize one primary window with others stacked behind.
+
+### Deck Layout
+
+Card-style window stacking:
+- One visible master window
+- Other windows stacked behind (visible as borders)
+- Switch focus to bring windows forward
+- Minimal screen clutter
+
+**Best For:**
+- Presentations
+- Single-tasking workflows
+- Limited screen space
+
+### Vertical Deck Layout
+
+Vertical variant of deck:
+- Master window position adjusted for vertical layout
+- Same stacking behavior
+- Optimized for portrait displays
+
+## Monocle Layout
+
+Full-screen single window layout:
+- One window visible at a time
+- Other windows hidden
+- Cycle through windows to switch view
+- Maximum screen real estate
+
+**Ideal For:**
+- Focused work requiring full screen
+- Media consumption
+- Presentations
+- Gaming or full-screen applications
+
+```conf
+# Switch between windows in monocle
+bind=SUPER,Tab,focusstack,next
+```
+
+## TGMix Layout
+
+Hybrid layout combining tile and grid:
+- Flexible arrangement adapting to window count
+- Combines master area with grid stack
+- Automatically optimizes for different window counts
+
+## Layout Gaps
+
+All layouts support configurable gaps between windows and screen edges.
+
+### Gap Configuration
+
+```conf
+# Inner horizontal gap between windows
+gappih=5
+
+# Inner vertical gap between windows
+gappiv=5
+
+# Outer horizontal gap (screen edges)
+gappoh=10
+
+# Outer vertical gap (screen edges)
+gappov=10
+
+# Hide gaps when only one window
+smartgaps=0
+```
+
+### Gap Controls
+
+```conf
+# Increase gaps
+bind=ALT+SHIFT,X,incgaps,1
+
+# Decrease gaps
+bind=ALT+SHIFT,Z,incgaps,-1
+
+# Toggle gaps on/off
+bind=ALT+SHIFT,R,togglegaps
+```
+
+## Per-Tag Layout Persistence
+
+<Info>
+Mango remembers the layout for each tag independently. When you switch layouts on tag 1, it doesn't affect tag 2's layout.
+</Info>
+
+This allows you to:
+- Configure different workflows per tag
+- Have coding layout on tag 1
+- Browser/reference layout on tag 2  
+- Communication layout on tag 3
+- Media/entertainment on tag 4
+
+## Layout Animations
+
+All layout transitions support smooth animations:
+
+```conf
+# Enable animations
+animations=1
+
+# Layout transition duration (milliseconds)
+animation_duration_move=500
+
+# Animation curve for smooth motion
+animation_curve_move=0.46,1.0,0.29,1
+```
+
+## Dynamic Layout Switching
+
+Mango allows switching layouts without disrupting your workflow:
+
+1. **Instant Switch**: Press layout switch keybinding
+2. **Smooth Animation**: Windows animate to new positions
+3. **State Preserved**: Window focus and order maintained
+4. **Per-Tag Memory**: Each tag remembers its last layout
+
+## Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Match Layout to Task" icon="bullseye">
+    Use tile for coding, grid for monitoring, monocle for focus work
+  </Card>
+  <Card title="Configure Per Tag" icon="tags">
+    Set different default layouts for different tag purposes
+  </Card>
+  <Card title="Learn Hotkeys" icon="keyboard">
+    Master layout switching and window navigation shortcuts
+  </Card>
+  <Card title="Adjust Gaps" icon="arrows-left-right-to-line">
+    Fine-tune gaps for your visual preferences and screen size
+  </Card>
+</CardGroup>
+
+## Related Configuration
+
+- [Window Commands](/reference/window-commands) - Window focus and movement
+- [Tags](/concepts/tags) - Tag-based workspaces  
+- [Animations](/concepts/animations) - Layout transition animations
+- [Keybindings](/configuration/keybindings) - Layout switching shortcuts

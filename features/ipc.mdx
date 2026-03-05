@@ -1,0 +1,378 @@
+---
+title: "IPC (Inter-Process Communication)"
+description: "Control and query Mango compositor from external programs using IPC"
+---
+
+Mango includes an IPC (Inter-Process Communication) system that allows external programs to interact with the compositor. This enables scripting, automation, custom tools, and integration with other applications.
+
+## Overview
+
+The IPC system provides:
+
+- **Query Compositor State**: Get information about windows, tags, layouts, and monitors
+- **Send Commands**: Control the compositor programmatically
+- **Scripting Support**: Build custom automation and workflows
+- **External Tools**: Integrate with status bars, launchers, and utilities
+- **Real-time Updates**: React to compositor events
+
+## IPC Protocol
+
+Mango's IPC is based on the dwl-ipc protocol, providing a stable interface for external communication.
+
+### Protocol File
+
+The IPC protocol is defined in:
+
+```
+src/ext-protocol/dwl-ipc.h
+```
+
+This protocol allows clients to:
+- Subscribe to compositor events
+- Query current state
+- Send commands to the compositor
+
+## Using IPC
+
+### IPC Socket
+
+Mango creates an IPC socket that clients connect to for communication. The socket location typically follows XDG standards:
+
+```bash
+# Socket location (typical)
+$XDG_RUNTIME_DIR/mango-ipc.sock
+```
+
+### IPC Clients
+
+To interact with Mango via IPC, you need an IPC client:
+
+1. **Direct Socket Communication**: Write your own client using Unix sockets
+2. **Existing Tools**: Use compatible tools from dwl ecosystem
+3. **Status Bar Integration**: Many status bars support dwl-ipc protocol
+
+## IPC Commands
+
+While specific command syntax requires checking the protocol definition, typical IPC capabilities include:
+
+### Query Commands
+
+<CardGroup cols={2}>
+  <Card title="List Windows" icon="window-restore">
+    Get information about all open windows
+  </Card>
+  <Card title="Current Tag" icon="tag">
+    Query which tag is currently active
+  </Card>
+  <Card title="Layout Info" icon="table-cells">
+    Get current layout name and configuration
+  </Card>
+  <Card title="Monitor Status" icon="display">
+    Query connected monitors and their state
+  </Card>
+</CardGroup>
+
+### Control Commands
+
+<CardGroup cols={2}>
+  <Card title="Change Layout" icon="arrows-rotate">
+    Switch to a specific layout programmatically
+  </Card>
+  <Card title="Focus Window" icon="bullseye">
+    Focus a specific window by ID
+  </Card>
+  <Card title="Move Window" icon="up-down-left-right">
+    Move windows between tags or monitors
+  </Card>
+  <Card title="Execute Actions" icon="play">
+    Trigger compositor actions from external scripts
+  </Card>
+</CardGroup>
+
+## Status Bar Integration
+
+### Waybar
+
+Waybar can integrate with Mango via IPC to display compositor information:
+
+```json
+{
+  "modules-left": ["wlr/workspaces"],
+  "wlr/workspaces": {
+    "format": "{name}",
+    "on-click": "activate"
+  }
+}
+```
+
+<Info>
+Specific Waybar module configuration for Mango may require the `wlr/workspaces` module or a dwl-specific module. Check [Waybar documentation](https://github.com/Alexays/Waybar/wiki) for details.
+</Info>
+
+### Other Status Bars
+
+Status bars with dwl-ipc support:
+
+- **Waybar**: Via wlr/workspaces or custom modules
+- **eww**: Via custom IPC scripts
+- **AGS**: Via JavaScript IPC bindings
+- **yambar**: Via custom IPC integration
+
+## Scripting with IPC
+
+### Example Use Cases
+
+<AccordionGroup>
+  <Accordion title="Automated Layout Switching">
+    Switch layouts based on time of day, number of windows, or other conditions.
+    
+    ```bash
+    #!/bin/bash
+    # Switch to monocle for single window
+    window_count=$(mango-ipc-client window-count)
+    if [ "$window_count" -eq 1 ]; then
+      mango-ipc-client set-layout monocle
+    fi
+    ```
+  </Accordion>
+  
+  <Accordion title="Window Management Scripts">
+    Create custom window management commands.
+    
+    ```bash
+    #!/bin/bash
+    # Move all Firefox windows to tag 2
+    mango-ipc-client list-windows | \
+      grep "firefox" | \
+      while read window_id; do
+        mango-ipc-client move-window "$window_id" 2
+      done
+    ```
+  </Accordion>
+  
+  <Accordion title="Monitor Configuration">
+    Automatically adjust layout when monitor configuration changes.
+    
+    ```bash
+    #!/bin/bash
+    # Change layout for vertical monitor
+    monitor=$(mango-ipc-client active-monitor)
+    if [[ "$monitor" == *"vertical"* ]]; then
+      mango-ipc-client set-layout vertical_tile
+    fi
+    ```
+  </Accordion>
+  
+  <Accordion title="Status Updates">
+    Feed compositor state to other applications.
+    
+    ```bash
+    #!/bin/bash
+    # Update external display with current tag
+    while true; do
+      tag=$(mango-ipc-client current-tag)
+      echo "Tag: $tag" > /tmp/mango-status
+      sleep 1
+    done
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Building IPC Clients
+
+### Socket Communication
+
+IPC clients connect to Mango's Unix socket:
+
+```python
+import socket
+import json
+
+def send_ipc_command(command):
+    sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    sock.connect("/run/user/1000/mango-ipc.sock")
+    
+    # Send command (protocol-specific format)
+    sock.send(json.dumps(command).encode())
+    
+    # Receive response
+    response = sock.recv(4096)
+    sock.close()
+    
+    return json.loads(response)
+
+# Query current layout
+layout = send_ipc_command({"type": "query", "request": "layout"})
+print(f"Current layout: {layout['name']}")
+```
+
+### Protocol Details
+
+<Warning>
+The example above is illustrative. Actual IPC protocol requires:
+- Correct message format (binary or text-based)
+- Proper protocol headers
+- Event subscription mechanism
+
+Refer to `src/ext-protocol/dwl-ipc.h` for exact protocol specification.
+</Warning>
+
+### Language Bindings
+
+Consider creating language bindings for easier IPC usage:
+
+- **Python**: High-level wrapper around socket communication
+- **JavaScript**: For integration with AGS or other JS tools
+- **Shell Scripts**: Simple wrapper scripts for common operations
+- **Rust/Go**: Type-safe bindings for robust tools
+
+## IPC Event Subscription
+
+IPC clients can subscribe to compositor events:
+
+### Event Types
+
+<ResponseField name="window_created" type="event">
+  Fired when a new window is opened
+</ResponseField>
+
+<ResponseField name="window_closed" type="event">
+  Fired when a window is closed
+</ResponseField>
+
+<ResponseField name="tag_changed" type="event">
+  Fired when active tag changes
+</ResponseField>
+
+<ResponseField name="layout_changed" type="event">
+  Fired when layout is switched
+</ResponseField>
+
+<ResponseField name="focus_changed" type="event">
+  Fired when window focus changes
+</ResponseField>
+
+### Subscribing to Events
+
+```c
+// Pseudo-code for event subscription
+ipc_client_subscribe(client, EVENT_TAG_CHANGED);
+
+while (true) {
+    event = ipc_client_wait_event(client);
+    if (event.type == EVENT_TAG_CHANGED) {
+        printf("Switched to tag %d\n", event.tag_id);
+    }
+}
+```
+
+## Integration Examples
+
+### Custom Tag Switcher
+
+Build a graphical tag switcher:
+
+```bash
+#!/bin/bash
+# rofi-based tag switcher using IPC
+
+# Get list of tags with windows
+tags=$(mango-ipc-client list-tags-with-windows)
+
+# Show in rofi
+selected=$(echo "$tags" | rofi -dmenu -p "Switch to tag:")
+
+# Switch to selected tag
+if [ -n "$selected" ]; then
+  tag_id=$(echo "$selected" | cut -d: -f1)
+  mango-ipc-client switch-tag "$tag_id"
+fi
+```
+
+### Window Selector
+
+Create a window selector that works across all tags:
+
+```bash
+#!/bin/bash
+# Select and focus any window via rofi
+
+# Get all windows with titles
+windows=$(mango-ipc-client list-windows-with-titles)
+
+# Select window
+selected=$(echo "$windows" | rofi -dmenu -p "Focus window:")
+
+# Focus selected window
+if [ -n "$selected" ]; then
+  window_id=$(echo "$selected" | cut -d: -f1)
+  mango-ipc-client focus-window "$window_id"
+fi
+```
+
+### Layout Indicator
+
+Display current layout in status bar:
+
+```bash
+#!/bin/bash
+# Output current layout for status bar
+
+while true; do
+  layout=$(mango-ipc-client current-layout)
+  echo "{\"text\": \"$layout\", \"class\": \"layout\"}"
+  sleep 1
+done
+```
+
+## IPC Security
+
+### Socket Permissions
+
+The IPC socket is created with restricted permissions:
+
+- Only accessible to the user running Mango
+- Located in user-specific runtime directory
+- Protected by filesystem permissions
+
+### Trusted Clients
+
+IPC allows full control over the compositor:
+
+<Warning>
+Any process that can connect to the IPC socket can control Mango. Ensure only trusted programs have access.
+</Warning>
+
+### Best Practices
+
+- Validate input in IPC scripts
+- Avoid running untrusted IPC clients
+- Monitor IPC usage if security is a concern
+- Use IPC for automation, not as a workaround for missing features
+
+## Development and Documentation
+
+### IPC Protocol Reference
+
+For detailed protocol documentation:
+
+1. Check the [Mango wiki](https://github.com/mangowm/mango/wiki/) for IPC guides
+2. Review `src/ext-protocol/dwl-ipc.h` for protocol details
+3. Examine dwl-ipc compatible tools for implementation examples
+4. Join the [Mango Discord](https://discord.gg/CPjbDxesh5) for community support
+
+### Contributing IPC Tools
+
+Share your IPC tools with the community:
+
+- Create GitHub repositories for reusable tools
+- Document IPC command usage
+- Share scripts in community channels
+- Contribute to IPC client libraries
+
+## Related Features
+
+- [Custom Scripts](/advanced/custom-scripts) - Automating Mango workflows
+- [mmsg IPC Tool](/advanced/mmsg-ipc-tool) - Complete IPC tool reference
+- [Window Commands](/reference/window-commands) - Window control commands
+- [Tags](/concepts/tags) - Tag-based workspace system

@@ -1,0 +1,382 @@
+---
+title: "Overview Mode"
+description: "Hycov-like overview mode for visualizing and selecting windows across all tags"
+---
+
+Mango's overview mode provides a bird's-eye view of all your windows across all tags, inspired by Hyprland's Hycov plugin. This feature makes it easy to locate and switch to any window regardless of which tag it's on.
+
+## Overview
+
+Overview mode displays all windows in a grid layout, allowing you to:
+
+- **Visualize All Windows**: See all open windows across all tags at once
+- **Quick Selection**: Click or navigate to any window to focus it
+- **Cross-Tag Navigation**: Switch to windows on different tags instantly
+- **Organized Layout**: Windows arranged in a clean grid for easy scanning
+- **Smooth Animations**: Zoom and fade effects for polished transitions
+
+<Frame>
+  <img src="https://github.com/user-attachments/assets/bb83004a-0563-4b48-ad89-6461a9b78b1f" alt="Overview Mode Demo" />
+</Frame>
+
+## Activating Overview Mode
+
+### Toggle Overview
+
+Use a single keybinding to enter and exit overview mode:
+
+```conf
+# Toggle overview mode
+bind=ALT,Tab,toggleoverview,
+```
+
+**Behavior:**
+- Press once to enter overview mode and see all windows
+- Press again to exit overview mode and return to normal view
+- Click any window in overview to focus it and exit overview mode
+
+### Alternative Bindings
+
+```conf
+# Alternative overview bindings
+bind=SUPER,Tab,toggleoverview,
+bind=SUPER,o,toggleoverview,
+bind=ALT,Escape,toggleoverview,
+```
+
+Choose a binding that fits your workflow and doesn't conflict with other shortcuts.
+
+## Overview Configuration
+
+Customize overview mode behavior in `config.conf`:
+
+```conf
+# Hot area size at screen edges (pixels)
+hotarea_size=10
+
+# Enable hot areas for triggering overview
+enable_hotarea=1
+
+# Overview tab mode (0=normal, 1=tab mode)
+ov_tab_mode=0
+
+# Inner gap between windows in overview (pixels)
+overviewgappi=5
+
+# Outer gap from screen edges in overview (pixels)
+overviewgappo=30
+```
+
+### Configuration Options
+
+<ParamField path="hotarea_size" type="integer" default="10">
+  Size of hot corners/edges in pixels. Move cursor to screen corner to trigger overview if enabled.
+</ParamField>
+
+<ParamField path="enable_hotarea" type="boolean" default="1">
+  Enable hot corner triggering of overview mode. Set to 0 to disable.
+</ParamField>
+
+<ParamField path="ov_tab_mode" type="boolean" default="0">
+  Enable tab mode for overview. Alternative navigation style.
+</ParamField>
+
+<ParamField path="overviewgappi" type="integer" default="5">
+  Inner gap between windows in overview grid (pixels).
+</ParamField>
+
+<ParamField path="overviewgappo" type="integer" default="30">
+  Outer gap between overview grid and screen edges (pixels).
+</ParamField>
+
+## Hot Area Triggering
+
+Overview can be triggered by moving your cursor to screen corners or edges:
+
+### Enabling Hot Areas
+
+```conf
+# Enable hot area triggering
+enable_hotarea=1
+
+# Size of hot area (10px at corners/edges)
+hotarea_size=10
+```
+
+### How It Works
+
+1. Move cursor to any screen corner or edge
+2. Hold cursor in hot area for a brief moment
+3. Overview mode activates automatically
+4. Move cursor away or select window to exit
+
+<Info>
+Hot area triggering is optional. You can disable it with `enable_hotarea=0` and use only keyboard shortcuts.
+</Info>
+
+## Window Selection in Overview
+
+Once in overview mode, you can select windows using multiple methods:
+
+### Mouse Selection
+
+- **Click**: Click any window to focus it and exit overview
+- **Hover**: Hover over windows to preview (if supported)
+- **Drag**: Drag windows to reorder (functionality may vary)
+
+### Keyboard Navigation
+
+```conf
+# Navigate between windows in overview
+bind=ALT,Left,focusdir,left
+bind=ALT,Right,focusdir,right
+bind=ALT,Up,focusdir,up
+bind=ALT,Down,focusdir,down
+
+# Select focused window (exit overview)
+bind=ALT,Return,toggleoverview,
+```
+
+Navigation keys work in overview mode to move focus between windows:
+
+<Steps>
+  <Step title="Enter Overview">
+    Press `ALT+Tab` to enter overview mode
+  </Step>
+  <Step title="Navigate Windows">
+    Use arrow keys to move focus between windows in the grid
+  </Step>
+  <Step title="Select Window">
+    Press `Return` to select focused window and exit overview
+  </Step>
+</Steps>
+
+## Overview Layout
+
+### Grid Arrangement
+
+Overview mode uses an intelligent grid layout:
+
+- **Automatic Sizing**: Window thumbnails sized to fit all windows
+- **Aspect Ratio**: Maintains window proportions
+- **Centered Layout**: Grid centered on screen
+- **Tag Grouping**: Windows can be grouped by tag (depends on `ov_tab_mode`)
+
+### Gap Configuration
+
+```conf
+# Tight spacing for many windows
+overviewgappi=3
+overviewgappo=20
+
+# Spacious layout for fewer windows
+overviewgappi=10
+overviewgappo=50
+```
+
+Adjust gaps based on:
+- Number of typical open windows
+- Screen resolution and size
+- Personal preference for density vs. whitespace
+
+## Tab Mode
+
+Tab mode provides an alternative overview experience:
+
+```conf
+# Enable tab mode
+ov_tab_mode=1
+```
+
+<Info>
+Tab mode changes how windows are displayed and navigated in overview. Exact behavior may vary - refer to the [wiki](https://github.com/mangowm/mango/wiki/) for detailed tab mode documentation.
+</Info>
+
+## Overview Animations
+
+Overview mode features smooth animations for a polished experience:
+
+```conf
+# Enable animations
+animations=1
+
+# Tag animation for overview transition
+animation_duration_tag=350
+animation_curve_tag=0.46,1.0,0.29,1
+
+# Window open/close in overview
+animation_duration_open=400
+animation_duration_close=800
+
+# Fade effects
+animation_fade_in=1
+animation_fade_out=1
+fadein_begin_opacity=0.5
+fadeout_begin_opacity=0.8
+```
+
+### Animation Effects
+
+- **Zoom Out**: Windows smoothly zoom out to grid positions
+- **Fade In**: Windows fade in as overview appears
+- **Fade Out**: Smooth fade when exiting overview
+- **Zoom In**: Selected window zooms back to full size
+
+## Use Cases
+
+<CardGroup cols={2}>
+  <Card title="Window Recovery" icon="magnifying-glass">
+    Find lost windows that ended up on unexpected tags
+  </Card>
+  <Card title="Task Switching" icon="arrows-rotate">
+    Quickly switch between tasks across different tags
+  </Card>
+  <Card title="Workspace Review" icon="eye">
+    Get an overview of all active work before ending session
+  </Card>
+  <Card title="Window Organization" icon="table-cells">
+    Review all windows to decide which to close or reorganize
+  </Card>
+</CardGroup>
+
+## Workflow Integration
+
+### Quick Task Switching
+
+1. Press `ALT+Tab` to enter overview
+2. Visually locate your target window
+3. Click window or navigate with arrows
+4. Return to full-screen work immediately
+
+### Window Cleanup
+
+Use overview to identify windows to close:
+
+1. Enter overview mode to see all windows
+2. Note which windows are no longer needed
+3. Exit overview and close unnecessary windows
+4. Keep workspace organized and performant
+
+### Multi-Tag Workflows
+
+Overview excels with tag-based organization:
+
+- **Code on Tag 1**: Editor and terminals
+- **Research on Tag 2**: Browser and documentation
+- **Communication on Tag 3**: Email and chat
+- **Media on Tag 4**: Music and videos
+
+Overview lets you jump between these contexts instantly without remembering which tag holds which window.
+
+## Performance Considerations
+
+### Many Windows
+
+Overview performs well with many windows:
+
+- Efficient rendering of window thumbnails
+- Smooth animations even with 20+ windows
+- Automatic grid sizing adapts to window count
+
+### Optimization Tips
+
+```conf
+# Reduce gaps for many windows
+overviewgappi=3
+overviewgappo=15
+
+# Adjust animation duration for snappier feel
+animation_duration_tag=250
+animation_duration_open=300
+```
+
+## Comparison with Other Features
+
+### Overview vs. Window Cycling
+
+| Feature | Overview Mode | Window Cycling (SUPER+Tab) |
+|---------|---------------|----------------------------|
+| **Visual** | See all windows at once | Cycle through one at a time |
+| **Navigation** | Direct selection | Sequential navigation |
+| **Tags** | Cross-tag visibility | Current tag only (typically) |
+| **Speed** | Fast for known position | Fast for recent windows |
+
+### Overview vs. Tags
+
+- **Tags**: Organize windows into workspaces
+- **Overview**: Transcend tag boundaries to see everything
+- **Together**: Tags keep things organized, overview helps you navigate
+
+## Advanced Configuration
+
+### Combining with Focus Settings
+
+```conf
+# Don't auto-focus windows on activation
+focus_on_activate=0
+
+# Allow cross-tag focus in overview
+focus_cross_tag=1
+```
+
+### Custom Overview Binding
+
+```conf
+# Use middle mouse button for overview
+mousebind=NONE,btn_middle,toggleoverview,0
+
+# Use hot corner and keyboard
+enable_hotarea=1
+bind=SUPER,space,toggleoverview,
+```
+
+## Tips and Best Practices
+
+<AccordionGroup>
+  <Accordion title="Assign Memorable Keybinding">
+    Use an intuitive key like `SUPER+Tab` or `ALT+Escape` that feels natural for "show all windows."
+  </Accordion>
+  
+  <Accordion title="Enable Hot Areas for Quick Access">
+    Hot area triggering can be faster than keyboard shortcuts once you build muscle memory.
+  </Accordion>
+  
+  <Accordion title="Adjust Gaps for Your Window Count">
+    If you typically have 10+ windows, reduce gaps. For 5-10 windows, increase gaps for easier clicking.
+  </Accordion>
+  
+  <Accordion title="Combine with Tag Organization">
+    Use tags to group related windows, then use overview when you need to jump outside your current context.
+  </Accordion>
+  
+  <Accordion title="Fine-tune Animations">
+    Reduce animation duration if overview feels sluggish. Increase if transitions feel too abrupt.
+  </Accordion>
+</AccordionGroup>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Overview not triggering with hot corners">
+    Check that `enable_hotarea=1` and increase `hotarea_size` to make corners easier to hit. Try `hotarea_size=20`.
+  </Accordion>
+  
+  <Accordion title="Windows too small in overview">
+    Reduce `overviewgappi` and `overviewgappo` to give more space to window thumbnails.
+  </Accordion>
+  
+  <Accordion title="Overview feels slow">
+    Reduce animation durations: `animation_duration_tag=200` for snappier transitions.
+  </Accordion>
+  
+  <Accordion title="Can't navigate with keyboard in overview">
+    Ensure your focus direction bindings don't have conflicting modifiers. Try arrow keys without modifiers while in overview.
+  </Accordion>
+</AccordionGroup>
+
+## Related Features
+
+- [Window Commands](/reference/window-commands) - Focus and navigation
+- [Tags](/concepts/tags) - Tag-based workspace organization
+- [Animations](/concepts/animations) - Overview transition effects
+- [Keybindings](/configuration/keybindings) - Custom overview shortcuts

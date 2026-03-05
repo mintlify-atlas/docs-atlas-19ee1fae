@@ -1,0 +1,533 @@
+---
+title: Window Commands
+description: All window manipulation commands in Mango Wayland Compositor
+---
+
+## Window Focus Commands
+
+### focusstack
+
+Focus the next or previous window in the tiling stack order.
+
+<ParamField path="arg->i" type="int" required>
+  Direction: `NEXT` or `PREV` to cycle through windows
+</ParamField>
+
+**Example:**
+```conf
+bind=SUPER,Tab,focusstack,next
+```
+
+**Behavior:**
+- Focuses next/previous tiled window on current monitor
+- Skips floating windows
+- Wraps around to first window when reaching the end
+- Optionally warps cursor to focused window if `warpcursor=1`
+
+---
+
+### focusdir
+
+Focus window in a specific direction (left, right, up, down).
+
+<ParamField path="arg->i" type="direction" required>
+  Direction: `LEFT`, `RIGHT`, `UP`, or `DOWN`
+</ParamField>
+
+**Examples:**
+```conf
+bind=ALT,Left,focusdir,left
+bind=ALT,Right,focusdir,right
+bind=ALT,Up,focusdir,up
+bind=ALT,Down,focusdir,down
+```
+
+**Behavior:**
+- Focuses window in the specified direction based on spatial layout
+- If no window found in direction and `focus_cross_tag=1`, switches to adjacent tag
+- If no window found and `focus_cross_monitor=1`, switches to adjacent monitor
+- Works with both tiled and floating windows
+
+---
+
+### focusmon
+
+Focus a different monitor.
+
+<ParamField path="arg->i" type="direction" required>
+  Direction: `LEFT`, `RIGHT`, or monitor name
+</ParamField>
+
+<ParamField path="arg->v" type="string">
+  Monitor name/spec to focus
+</ParamField>
+
+**Examples:**
+```conf
+bind=alt+shift,Left,focusmon,left
+bind=alt+shift,Right,focusmon,right
+```
+
+**Behavior:**
+- Switches focus to specified monitor
+- Focuses topmost window on target monitor
+- Optionally warps cursor to target monitor if `warpcursor=1`
+
+---
+
+### focuslast
+
+Focus the last focused window.
+
+**Example:**
+```conf
+bind=SUPER,grave,focuslast,
+```
+
+**Behavior:**
+- Cycles through focus history
+- Switches to the tag containing the last focused window
+- Useful for quickly switching between two windows
+
+---
+
+## Window State Commands
+
+### togglefloating
+
+Toggle floating state of focused window.
+
+**Example:**
+```conf
+bind=ALT,backslash,togglefloating,
+```
+
+**Behavior:**
+- Makes tiled window floating or floating window tiled
+- Floating windows can be freely moved and resized
+- Tiled windows participate in automatic layout
+- Preserves window geometry when toggling
+
+---
+
+### togglefullscreen
+
+Toggle fullscreen state of focused window.
+
+**Example:**
+```conf
+bind=ALT,f,togglefullscreen,
+```
+
+**Behavior:**
+- Expands window to cover entire monitor
+- Hides borders and gaps
+- Window is on top of all other windows
+- Restores previous state when toggled off
+
+---
+
+### togglefakefullscreen
+
+Toggle fake fullscreen state.
+
+**Example:**
+```conf
+bind=ALT+SHIFT,f,togglefakefullscreen,
+```
+
+**Behavior:**
+- Window appears fullscreen but only within its workspace area
+- Allows other windows to remain visible on other monitors
+- Useful for applications that don't handle true fullscreen well
+
+---
+
+### togglemaximizescreen
+
+Toggle maximized state of focused window.
+
+**Example:**
+```conf
+bind=ALT,a,togglemaximizescreen,
+```
+
+**Behavior:**
+- Expands window to fill available space
+- Respects gaps and borders
+- Different from fullscreen (not always on top)
+- Window border changes to `maximizescreencolor`
+
+---
+
+### toggleglobal
+
+Toggle global state (visible on all tags).
+
+**Example:**
+```conf
+bind=SUPER,g,toggleglobal,
+```
+
+**Behavior:**
+- Makes window visible on all tags/workspaces
+- Useful for monitoring applications, chat clients
+- Window border changes to `globalcolor`
+- Window exits scroller stack if in one
+
+---
+
+### toggleoverlay
+
+Toggle overlay mode for focused window.
+
+**Example:**
+```conf
+bind=SUPER,o,toggleoverlay,
+```
+
+**Behavior:**
+- Places window in overlay layer (above all other windows)
+- Window remains on top regardless of focus
+- Border changes to `overlaycolor`
+- Cannot be used with fullscreen windows
+
+---
+
+### minimized
+
+Minimize the focused window.
+
+**Example:**
+```conf
+bind=SUPER,i,minimized,
+```
+
+**Behavior:**
+- Hides window from view
+- Window remains in compositor but not visible
+- Can be restored with `restore_minimized`
+- Does not work in overview mode
+
+---
+
+### restore_minimized
+
+Restore the last minimized window.
+
+**Example:**
+```conf
+bind=SUPER+SHIFT,I,restore_minimized
+```
+
+**Behavior:**
+- Restores most recently minimized window
+- Focuses and shows the window
+- Switches to the tag containing the window
+- Warps cursor to window if `warpcursor=1`
+
+---
+
+### toggle_scratchpad
+
+Toggle scratchpad visibility.
+
+**Example:**
+```conf
+bind=ALT,z,toggle_scratchpad
+```
+
+**Behavior:**
+- Shows/hides scratchpad windows
+- Scratchpad is a hidden workspace for temporary windows
+- Window appears centered on screen with configured size
+- Border changes to `scratchpadcolor`
+
+---
+
+### toggle_named_scratchpad
+
+Toggle a named scratchpad (specific application).
+
+<ParamField path="arg->v" type="string" required>
+  Application ID
+</ParamField>
+
+<ParamField path="arg->v2" type="string">
+  Window title
+</ParamField>
+
+<ParamField path="arg->v3" type="string">
+  Command to spawn if window doesn't exist
+</ParamField>
+
+**Example:**
+```conf
+bind=SUPER,t,toggle_named_scratchpad,id:foot,title:dropdown,spawn:foot --title=dropdown
+```
+
+**Behavior:**
+- Shows/hides a specific application as scratchpad
+- Launches application if it doesn't exist
+- Useful for dropdown terminals, calculators, etc.
+
+---
+
+## Window Movement Commands
+
+### exchange_client
+
+Swap focused window with window in specified direction.
+
+<ParamField path="arg->i" type="direction" required>
+  Direction: `LEFT`, `RIGHT`, `UP`, or `DOWN`
+</ParamField>
+
+**Examples:**
+```conf
+bind=SUPER+SHIFT,Up,exchange_client,up
+bind=SUPER+SHIFT,Down,exchange_client,down
+bind=SUPER+SHIFT,Left,exchange_client,left
+bind=SUPER+SHIFT,Right,exchange_client,right
+```
+
+**Behavior:**
+- Swaps position of focused window with adjacent window
+- Only works with tiled windows
+- Does not work in fullscreen or maximized state
+- Maintains layout structure
+
+---
+
+### exchange_stack_client
+
+Swap focused window with next/previous in stack.
+
+<ParamField path="arg->i" type="int" required>
+  Direction: `NEXT` or `PREV`
+</ParamField>
+
+**Example:**
+```conf
+bind=SUPER,j,exchange_stack_client,next
+bind=SUPER,k,exchange_stack_client,prev
+```
+
+**Behavior:**
+- Swaps window with next/previous in stack order
+- Only works with tiled windows
+- Does not work with floating, fullscreen, or maximized windows
+
+---
+
+### movewin
+
+Move floating window by pixel offset.
+
+<ParamField path="arg->ui" type="operator">
+  Operation type: `NUM_TYPE_PLUS`, `NUM_TYPE_MINUS`, or absolute
+</ParamField>
+
+<ParamField path="arg->i" type="int" required>
+  X offset in pixels
+</ParamField>
+
+<ParamField path="arg->ui2" type="operator">
+  Operation type for Y
+</ParamField>
+
+<ParamField path="arg->i2" type="int" required>
+  Y offset in pixels
+</ParamField>
+
+**Examples:**
+```conf
+bind=CTRL+SHIFT,Up,movewin,+0,-50
+bind=CTRL+SHIFT,Down,movewin,+0,+50
+bind=CTRL+SHIFT,Left,movewin,-50,+0
+bind=CTRL+SHIFT,Right,movewin,+50,+0
+```
+
+**Behavior:**
+- Moves window by specified pixel offset
+- Automatically makes window floating if tiled
+- Does not work with fullscreen windows
+- Use `+` prefix for relative movement
+
+---
+
+### smartmovewin
+
+Intelligently move floating window avoiding collisions.
+
+<ParamField path="arg->i" type="direction" required>
+  Direction: `LEFT`, `RIGHT`, `UP`, or `DOWN`
+</ParamField>
+
+**Example:**
+```conf
+bind=SUPER,Left,smartmovewin,left
+```
+
+**Behavior:**
+- Moves window in direction while avoiding other windows
+- Snaps to edges of other windows
+- Automatically makes window floating
+- Respects monitor boundaries
+
+---
+
+### centerwin
+
+Center window on monitor.
+
+**Example:**
+```conf
+bind=SUPER,c,centerwin,
+```
+
+**Behavior:**
+- Centers floating window on current monitor
+- For scroller layout, centers tiled window horizontally/vertically
+- Does not work with fullscreen or maximized windows
+
+---
+
+## Window Resizing Commands
+
+### resizewin
+
+Resize window by pixel offset.
+
+<ParamField path="arg->ui" type="operator">
+  Operation type: `NUM_TYPE_PLUS`, `NUM_TYPE_MINUS`, or absolute
+</ParamField>
+
+<ParamField path="arg->i" type="int" required>
+  Width change in pixels
+</ParamField>
+
+<ParamField path="arg->ui2" type="operator">
+  Operation type for height
+</ParamField>
+
+<ParamField path="arg->i2" type="int" required>
+  Height change in pixels
+</ParamField>
+
+**Examples:**
+```conf
+bind=CTRL+ALT,Up,resizewin,+0,-50
+bind=CTRL+ALT,Down,resizewin,+0,+50
+bind=CTRL+ALT,Left,resizewin,-50,+0
+bind=CTRL+ALT,Right,resizewin,+50,+0
+```
+
+**Behavior:**
+- Resizes window by specified pixel amount
+- Works with both floating and tiled windows
+- For tiled windows, adjusts window proportion
+- Does not work with fullscreen or maximized windows
+- Use `+` prefix for relative sizing
+
+---
+
+### smartresizewin
+
+Intelligently resize window avoiding collisions.
+
+<ParamField path="arg->i" type="direction" required>
+  Direction: `LEFT`, `RIGHT`, `UP`, or `DOWN`
+</ParamField>
+
+**Example:**
+```conf
+bind=SUPER+ALT,Right,smartresizewin,right
+```
+
+**Behavior:**
+- Resizes window in direction while avoiding other windows
+- Snaps to edges of other windows
+- Automatically makes window floating
+- Respects monitor boundaries
+
+---
+
+### moveresize
+
+Interactive move/resize with mouse.
+
+<ParamField path="arg->ui" type="mode" required>
+  Mode: `CurMove` or `CurResize`
+</ParamField>
+
+**Examples:**
+```conf
+mousebind=SUPER,btn_left,moveresize,curmove
+mousebind=SUPER,btn_right,moveresize,curresize
+```
+
+**Behavior:**
+- Enters interactive move/resize mode
+- `curmove`: Drag to move window
+- `curresize`: Drag to resize window from nearest corner
+- Automatically makes window floating if tiled
+- Does not work with fullscreen or maximized windows
+
+---
+
+## Other Window Commands
+
+### killclient
+
+Close the focused window.
+
+**Example:**
+```conf
+bind=ALT,q,killclient,
+```
+
+**Behavior:**
+- Sends close request to focused window
+- Application may prompt to save changes
+- If application doesn't respond, may need force quit
+
+---
+
+### zoom
+
+Move focused window to master position.
+
+**Example:**
+```conf
+bind=SUPER,Return,zoom,
+```
+
+**Behavior:**
+- Swaps focused window with master window
+- Only works with tiled windows in layouts with master area
+- Does not work with floating windows
+
+---
+
+### toggle_render_border
+
+Toggle border rendering on/off.
+
+**Example:**
+```conf
+bind=SUPER,b,toggle_render_border,
+```
+
+**Behavior:**
+- Globally enables/disables window borders
+- Affects all windows
+- Useful for screenshots or maximizing screen space
+
+---
+
+## See Also
+
+- [Keybinding Reference](/reference/keybindings)
+- [Layout Commands](/reference/layout-commands)
+- [Tag Commands](/reference/tag-commands)

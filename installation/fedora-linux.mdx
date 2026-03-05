@@ -1,0 +1,116 @@
+---
+title: 'Fedora Linux Installation'
+description: 'Install Mango Wayland Compositor on Fedora Linux'
+---
+
+## Installation from Terra Repository
+
+Mango is available in the third-party Terra repository for Fedora.
+
+<Steps>
+  <Step title="Add Terra repository">
+    First, add the Terra repository to your system. Visit [Terra's website](https://terra.fyralabs.com/) for installation instructions:
+    
+    ```bash
+    sudo dnf install --repofromrepo 'terra' terra-release
+    ```
+    
+    <Note>
+      Terra is a community repository maintained by Fyra Labs. Check their documentation for the latest setup instructions.
+    </Note>
+  </Step>
+  
+  <Step title="Install Mango">
+    Once the repository is added, install Mango:
+    
+    ```bash
+    sudo dnf install mangowm
+    ```
+  </Step>
+  
+  <Step title="Install suggested tools">
+    Install recommended components for a complete Wayland environment:
+    
+    <CodeGroup>
+    ```bash Essential Tools
+    sudo dnf install rofi foot waybar swaybg \
+      wl-clipboard xfce-polkit
+    ```
+    
+    ```bash Optional Tools
+    sudo dnf install grim slurp brightnessctl \
+      wlsunset dunst
+    ```
+    </CodeGroup>
+  </Step>
+  
+  <Step title="Launch Mango">
+    After installation, you can start Mango from a TTY:
+    
+    ```bash
+    mango
+    ```
+    
+    Or select it from your display manager's session list.
+  </Step>
+</Steps>
+
+## Dependencies
+
+The Terra package will automatically install these dependencies:
+
+- wayland (>=1.23.1)
+- wayland-protocols
+- libinput (>=1.27.1)
+- libdrm
+- libxkbcommon
+- pixman
+- libdisplay-info
+- libliftoff
+- hwdata
+- seatd
+- pcre2
+- xorg-x11-server-Xwayland
+- libxcb
+- wlroots (0.19.x)
+- scenefx (0.4.x)
+
+## Suggested Tools
+
+Choose components based on your preferences:
+
+<AccordionGroup>
+  <Accordion title="Application Launcher">
+    - **rofi**: Feature-rich application launcher
+    - **bemenu**: Simple menu for Wayland
+    - **fuzzel**: Fast application launcher
+  </Accordion>
+  
+  <Accordion title="Terminal Emulator">
+    - **foot**: Lightweight Wayland terminal
+    - **alacritty**: GPU-accelerated terminal
+    - **kitty**: Feature-rich terminal
+  </Accordion>
+  
+  <Accordion title="Status Bar">
+    - **waybar**: Highly customizable (preferred)
+    - **eww**: Widget system for Wayland
+  </Accordion>
+  
+  <Accordion title="Notification Daemon">
+    - **swaync**: Notification center for Wayland
+    - **dunst**: Lightweight notification daemon
+    - **mako**: Minimal notification daemon
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Configuration" icon="gear" href="/configuration/overview">
+    Configure Mango to your preferences
+  </Card>
+  <Card title="Keybindings" icon="keyboard" href="/configuration/keybindings">
+    Learn default keybindings and create custom ones
+  </Card>
+</CardGroup>

@@ -1,0 +1,405 @@
+---
+title: "XWayland Support"
+description: "Excellent XWayland support for running X11 applications seamlessly on Wayland"
+---
+
+Mango provides excellent XWayland support, allowing you to run legacy X11 applications seamlessly alongside native Wayland applications. Most X11 applications work out of the box with proper window management, decorations, and compositor features.
+
+## Overview
+
+XWayland is an X server that runs as a Wayland client, enabling X11 applications to run on Wayland compositors.
+
+**Benefits of Mango's XWayland Support:**
+
+- **Seamless Integration**: X11 and Wayland apps work identically
+- **Full Feature Support**: Tiling, floating, effects, and animations
+- **Stable Implementation**: Based on proven wlroots XWayland support
+- **Window Management**: Complete control over X11 windows
+- **No Flickering**: Zero-flicker rendering for smooth visuals
+
+<Info>
+Mango treats XWayland windows as first-class citizens. You won't notice a difference between native Wayland and X11 applications in daily use.
+</Info>
+
+## Installation
+
+### Dependencies
+
+XWayland support requires the XWayland server and related libraries:
+
+<Tabs>
+  <Tab title="Arch Linux">
+    ```bash
+    sudo pacman -S xorg-xwayland libxcb
+    ```
+  </Tab>
+  
+  <Tab title="Debian/Ubuntu">
+    ```bash
+    sudo apt install xwayland libxcb1
+    ```
+  </Tab>
+  
+  <Tab title="Fedora">
+    ```bash
+    sudo dnf install xorg-x11-server-Xwayland libxcb
+    ```
+  </Tab>
+  
+  <Tab title="Gentoo">
+    ```bash
+    emerge --ask x11-base/xwayland x11-libs/libxcb
+    ```
+  </Tab>
+</Tabs>
+
+### Building Mango with XWayland
+
+Mango includes XWayland support by default when built:
+
+```bash
+git clone https://github.com/mangowm/mango.git
+cd mango
+meson build -Dprefix=/usr
+sudo ninja -C build install
+```
+
+No special flags needed - XWayland support is automatically enabled if dependencies are present.
+
+## Running X11 Applications
+
+### Automatic Detection
+
+No configuration needed - just launch X11 applications normally:
+
+```bash
+# X11 applications work out of the box
+firefox          # If installed as X11 version
+gimp
+xterm
+inkscape
+```
+
+Mango automatically:
+1. Starts XWayland server when first X11 app launches
+2. Routes X11 applications through XWayland
+3. Manages X11 windows alongside Wayland windows
+
+### Verifying XWayland
+
+Check if an application is using XWayland:
+
+```bash
+# List XWayland clients
+xlsclients
+
+# Check window properties
+xwininfo
+
+# View X server info
+xdpyinfo
+```
+
+## Window Management
+
+### X11 Window Behavior
+
+X11 windows in Mango behave identically to Wayland windows:
+
+<CardGroup cols={2}>
+  <Card title="Tiling" icon="table-cells">
+    X11 windows tile in all layouts
+  </Card>
+  <Card title="Floating" icon="up-down-left-right">
+    X11 windows can float and be dragged
+  </Card>
+  <Card title="Fullscreen" icon="window-maximize">
+    X11 fullscreen properly supported
+  </Card>
+  <Card title="Focus" icon="bullseye">
+    Focus management works seamlessly
+  </Card>
+  <Card title="Tags" icon="tags">
+    X11 windows work with tag system
+  </Card>
+  <Card title="Animations" icon="sparkles">
+    X11 windows animate like Wayland windows
+  </Card>
+</CardGroup>
+
+### Window States
+
+All Mango window states work with X11 applications:
+
+```conf
+# Toggle floating (works for X11)
+bind=ALT,backslash,togglefloating,
+
+# Maximize (X11 compatible)
+bind=ALT,a,togglemaximizescreen,
+
+# Fullscreen (proper X11 fullscreen)
+bind=ALT,f,togglefullscreen,
+
+# Send to scratchpad (X11 supported)
+bind=ALT,z,toggle_scratchpad
+```
+
+## X11-Specific Features
+
+### Window Properties
+
+Access X11 window properties for rules:
+
+```conf
+# Window rules can target X11 apps by class
+windowrule=float,class:xterm
+windowrule=tag:4,class:Gimp
+```
+
+Query X11 window class:
+
+```bash
+# Get window class for rules
+xprop WM_CLASS
+# Then click on target window
+```
+
+### X11 Clipboard
+
+X11 clipboard integration works automatically:
+
+- Copy in X11 app → Paste in Wayland app ✓
+- Copy in Wayland app → Paste in X11 app ✓
+- Selection clipboard (middle-click paste) supported ✓
+
+### Input Methods
+
+X11 input methods work through XWayland:
+
+```bash
+# Set input method for X11 apps
+export XMODIFIERS=@im=fcitx
+export GTK_IM_MODULE=fcitx
+export QT_IM_MODULE=fcitx
+```
+
+For better input method support, see [Input Methods](/configuration/input-methods).
+
+## Application Compatibility
+
+### Fully Compatible
+
+These X11 application types work perfectly:
+
+- **Terminals**: xterm, urxvt, terminator
+- **Browsers**: Firefox (X11 build), Chromium (X11)
+- **Creative**: GIMP, Inkscape, Blender (X11 mode)
+- **Gaming**: Many X11 games via Steam/Wine
+- **Development**: Many IDEs and editors
+- **Office**: LibreOffice (X11 build)
+
+### Common X11 Applications
+
+<AccordionGroup>
+  <Accordion title="Firefox (X11)">
+    Full support including:
+    - Tiling and floating
+    - Fullscreen video
+    - Hardware acceleration
+    - Drag and drop
+    - Context menus
+  </Accordion>
+  
+  <Accordion title="Electron Apps">
+    Many Electron apps use X11:
+    - VSCode (X11 fallback)
+    - Slack (X11 version)
+    - Discord (X11 version)
+    - Spotify
+    
+    All work seamlessly with Mango.
+  </Accordion>
+  
+  <Accordion title="Games via Steam/Wine">
+    X11 games work through XWayland:
+    - Most native Linux games
+    - Wine/Proton games
+    - May need fullscreen workarounds
+  </Accordion>
+  
+  <Accordion title="Legacy Applications">
+    Older X11-only applications:
+    - Old GTK2 applications
+    - Legacy Qt applications  
+    - Scientific software
+    - Specialized tools
+  </Accordion>
+</AccordionGroup>
+
+### Known Limitations
+
+<Warning>
+Some X11 features have limitations on Wayland:
+
+- **Global Hotkeys**: X11 apps can't register global shortcuts (Wayland security)
+- **Window Positioning**: X11 apps can't control their absolute position
+- **Screen Capture**: X11 screen capture APIs don't work (use portal instead)
+- **Cursor Constraints**: Some games may have cursor confinement issues
+</Warning>
+
+## Performance
+
+### XWayland Performance
+
+Mango's XWayland implementation is highly optimized:
+
+- **Zero Flickering**: Perfect frame delivery for X11 apps
+- **Hardware Acceleration**: Full GPU support for X11 rendering
+- **Minimal Overhead**: Negligible performance impact vs native X11
+- **Efficient Rendering**: Same scene graph as Wayland windows
+
+### Comparing Native vs XWayland
+
+For most applications, you won't notice performance differences:
+
+| Aspect | Wayland Native | XWayland |
+|--------|----------------|----------|
+| **Rendering** | Direct | Minimal overhead |
+| **Input Latency** | Lowest | Near-identical |
+| **Tearing** | None | None |
+| **GPU Usage** | Optimal | Near-optimal |
+| **Memory** | Lowest | Slightly higher |
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="XWayland not starting">
+    Check if xorg-xwayland is installed:
+    ```bash
+    which Xwayland
+    ```
+    
+    If missing, install xorg-xwayland package for your distribution.
+  </Accordion>
+  
+  <Accordion title="X11 app not launching">
+    Check Mango logs for XWayland errors:
+    ```bash
+    journalctl -xe | grep -i xwayland
+    ```
+    
+    Ensure XWayland has permission to execute.
+  </Accordion>
+  
+  <Accordion title="Clipboard not working between X11 and Wayland">
+    Install a clipboard manager that handles both:
+    ```bash
+    # Arch
+    yay -S wl-clipboard xclip
+    ```
+  </Accordion>
+  
+  <Accordion title="Input method not working in X11 apps">
+    Set environment variables in autostart or shell profile:
+    ```bash
+    export XMODIFIERS=@im=fcitx
+    export GTK_IM_MODULE=fcitx  
+    export QT_IM_MODULE=fcitx
+    ```
+  </Accordion>
+  
+  <Accordion title="Fullscreen games not working properly">
+    Try fake fullscreen instead:
+    ```conf
+    bind=ALT+SHIFT,f,togglefakefullscreen,
+    ```
+    
+    Some games work better with fake fullscreen on Wayland.
+  </Accordion>
+  
+  <Accordion title="Blurry X11 applications on HiDPI">
+    Set X11 DPI scaling:
+    ```bash
+    xrdb -merge <<< "Xft.dpi: 192"
+    ```
+    
+    Add to autostart.sh for persistence.
+  </Accordion>
+</AccordionGroup>
+
+## Configuration
+
+### XWayland Environment Variables
+
+Set in autostart.sh or shell profile:
+
+```bash
+# Force X11 backend for specific apps
+export GDK_BACKEND=x11
+
+# X11 DPI for HiDPI displays
+export GDK_DPI_SCALE=2
+
+# Disable X11 compositor hints (Mango manages composition)
+export XCOMPOSITING=0
+```
+
+### Window Rules for X11 Apps
+
+```conf
+# Target X11 applications by class name
+windowrule=float,class:Xterm
+windowrule=float,class:xev
+windowrule=tag:2,class:firefox
+windowrule=fullscreen,class:steam_app_*
+```
+
+Use `xprop WM_CLASS` to find class names for rules.
+
+## Migration from X11
+
+### Switching from X11 WM to Mango
+
+If migrating from an X11 window manager:
+
+1. **Most X11 apps work unchanged** - Launch them normally
+2. **Wayland-native apps preferred** - Use Wayland versions when available
+3. **Check for Wayland alternatives** - Many apps have Wayland builds
+4. **Update config** - Some X11-specific configs may need adjustment
+
+### Finding Wayland Alternatives
+
+| X11 App | Wayland Alternative |
+|---------|--------------------|
+| xterm | foot, alacritty |
+| dmenu | bemenu, wofi, rofi (Wayland) |
+| dunst (X11) | mako, swaync |
+| feh | imv, swayimg |
+| scrot | grim + slurp |
+
+See [Recommended Tools](/community/recommended-tools) for complete list.
+
+## Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Prefer Wayland Native" icon="rocket">
+    Use Wayland versions of apps when available for best performance and security
+  </Card>
+  <Card title="XWayland as Fallback" icon="shield">
+    Keep XWayland for legacy apps that don't have Wayland support
+  </Card>
+  <Card title="Test Compatibility" icon="flask">
+    Test critical X11 apps before full migration to ensure they work properly
+  </Card>
+  <Card title="Monitor Performance" icon="gauge">
+    Check if X11 apps impact performance; consider Wayland alternatives if needed
+  </Card>
+</CardGroup>
+
+## Related Documentation
+
+- [Installation](/installation/from-source) - Installing XWayland dependencies
+- [Configuration Rules](/configuration/rules) - Configuring rules for applications
+- [Recommended Tools](/community/recommended-tools) - Wayland-native alternatives
+- [Input Devices](/configuration/input-devices) - Configuring input devices

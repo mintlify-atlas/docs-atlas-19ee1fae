@@ -1,0 +1,177 @@
+---
+title: IPC Protocol Overview
+description: Understanding Mango's Inter-Process Communication protocol
+---
+
+Mango Wayland Compositor implements the `dwl-ipc-unstable-v2` protocol for inter-process communication. This allows external clients to query compositor state and control window management operations.
+
+## Protocol Architecture
+
+The IPC protocol is built on Wayland's native protocol system and consists of two main interfaces:
+
+### zdwl_ipc_manager_v2
+
+The manager interface is exposed as a global in `wl_registry`. It provides:
+
+- **Tag Information**: Announces the number of tags configured in the compositor
+- **Layout Enumeration**: Lists all available layouts
+- **Output Access**: Creates `zdwl_ipc_output_v2` objects for specific outputs
+
+After binding to the manager, clients receive `tags` and `layout` events that expose the compositor's configuration.
+
+### zdwl_ipc_output_v2
+
+The output interface allows observing and controlling individual outputs (monitors). It provides:
+
+**Events** (compositor → client):
+- Tag state updates (active, urgent, client count)
+- Layout changes
+- Client information (title, appid)
+- Fullscreen and floating status
+- Client geometry (x, y, width, height)
+- Keyboard layout and keybind mode
+- Scale factor
+
+**Requests** (client → compositor):
+- Set active tags
+- Modify client tags
+- Change layout
+- Dispatch internal commands
+- Quit compositor
+
+## Event Double-Buffering
+
+Events from `zdwl_ipc_output_v2` are **double-buffered**. Clients should:
+
+1. Cache incoming events
+2. Wait for the `frame` event
+3. Redraw/update when `frame` is received
+
+This ensures atomic updates and prevents visual tearing in status bars.
+
+## mmsg Client Tool
+
+Mango includes `mmsg`, a command-line IPC client that implements the dwl-ipc-unstable-v2 protocol. It provides three operation modes:
+
+### Operation Modes
+
+<CodeGroup>
+```bash Get Mode
+# Query compositor state
+mmsg -g [options]
+```
+
+```bash Set Mode
+# Modify compositor state
+mmsg -s [options]
+```
+
+```bash Watch Mode
+# Stream events continuously
+mmsg -w [options]
+```
+</CodeGroup>
+
+### Common Use Cases
+
+<CodeGroup>
+```bash Query Active Tags
+# Get selected tags with occupancy and urgency info
+mmsg -g -t
+```
+
+```bash Switch Tags
+# Switch to tag 3
+mmsg -s -t 3
+
+# Toggle tag 2
+mmsg -s -t ^-^+
+```
+
+```bash Get Focused Client
+# Get title and appid of focused client
+mmsg -g -c
+```
+
+```bash Change Layout
+# List available layouts
+mmsg -g -L
+
+# Switch to a specific layout
+mmsg -s -l tile
+```
+
+```bash Watch Compositor Events
+# Watch all events
+mmsg -w
+
+# Watch only tag changes
+mmsg -w -t
+```
+</CodeGroup>
+
+## Building IPC Clients
+
+To build custom IPC clients:
+
+1. **Generate Protocol Bindings**
+   ```bash
+   wayland-scanner client-header \
+     protocols/dwl-ipc-unstable-v2.xml \
+     dwl-ipc-unstable-v2-protocol.h
+   
+   wayland-scanner private-code \
+     protocols/dwl-ipc-unstable-v2.xml \
+     dwl-ipc-unstable-v2-protocol.c
+   ```
+
+2. **Connect to Wayland Display**
+   ```c
+   struct wl_display *display = wl_display_connect(NULL);
+   struct wl_registry *registry = wl_display_get_registry(display);
+   ```
+
+3. **Bind IPC Manager**
+   ```c
+   // In registry global_add callback
+   if (strcmp(interface, zdwl_ipc_manager_v2_interface.name) == 0) {
+       dwl_ipc_manager = wl_registry_bind(registry, name,
+           &zdwl_ipc_manager_v2_interface, 2);
+       zdwl_ipc_manager_v2_add_listener(dwl_ipc_manager,
+           &dwl_ipc_listener, NULL);
+   }
+   ```
+
+4. **Get Output Interface**
+   ```c
+   // For wl_output objects
+   struct zdwl_ipc_output_v2 *dwl_ipc_output =
+       zdwl_ipc_manager_v2_get_output(dwl_ipc_manager, output);
+   zdwl_ipc_output_v2_add_listener(dwl_ipc_output,
+       &dwl_ipc_output_listener, data);
+   ```
+
+5. **Dispatch Events**
+   ```c
+   // Single update
+   wl_display_roundtrip(display);
+   
+   // Continuous watching
+   while (wl_display_dispatch(display) != -1);
+   ```
+
+## Protocol Stability
+
+<Warning>
+The `dwl-ipc-unstable-v2` protocol is **experimental** and may change. Backward incompatible changes are indicated by version bumps in protocol and interface names.
+</Warning>
+
+The protocol will be stabilized by:
+- Removing the 'z' prefix
+- Removing version numbers from names
+- Resetting interface version to 1
+
+## See Also
+
+- [IPC Commands Reference](/reference/ipc-commands) - Complete mmsg command reference
+- [Protocol XML](https://github.com/MangoWM/mango/blob/main/source/protocols/dwl-ipc-unstable-v2.xml) - Full protocol specification

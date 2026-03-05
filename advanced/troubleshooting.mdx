@@ -1,0 +1,696 @@
+---
+title: Troubleshooting
+description: Common issues and solutions for Mango Wayland Compositor
+---
+
+This guide covers common issues you may encounter while using Mango and their solutions.
+
+## Installation Issues
+
+<Accordion title="Build fails with wlroots version error">
+Mango requires wlroots 0.19.2. Ensure you're using the correct version:
+
+```bash
+# Clone and build wlroots 0.19.2
+git clone -b 0.19.2 https://gitlab.freedesktop.org/wlroots/wlroots.git
+cd wlroots
+meson build -Dprefix=/usr
+sudo ninja -C build install
+```
+
+If you have multiple wlroots versions:
+```bash
+pkg-config --modversion wlroots  # Check version
+sudo ldconfig  # Refresh library cache
+```
+</Accordion>
+
+<Accordion title="Build fails with scenefx not found">
+Mango requires scenefx 0.4.1 for window effects:
+
+```bash
+# Clone and build scenefx
+git clone -b 0.4.1 https://github.com/wlrfx/scenefx.git
+cd scenefx
+meson build -Dprefix=/usr
+sudo ninja -C build install
+```
+
+Verify installation:
+```bash
+pkg-config --modversion scenefx
+```
+</Accordion>
+
+<Accordion title="Missing dependencies on fresh system">
+Install all required dependencies:
+
+**Arch Linux:**
+```bash
+sudo pacman -S wayland wayland-protocols libinput libdrm libxkbcommon \
+  pixman libdisplay-info libliftoff hwdata seatd pcre2 xorg-xwayland libxcb
+```
+
+**Debian/Ubuntu:**
+```bash
+sudo apt install libwayland-dev wayland-protocols libinput-dev libdrm-dev \
+  libxkbcommon-dev libpixman-1-dev libdisplay-info-dev libliftoff-dev \
+  hwdata libseatd-dev libpcre2-dev xwayland libxcb1-dev meson ninja-build
+```
+
+**Fedora:**
+```bash
+sudo dnf install wayland-devel wayland-protocols-devel libinput-devel \
+  libdrm-devel libxkbcommon-devel pixman-devel libdisplay-info-devel \
+  libliftoff-devel hwdata seatd-devel pcre2-devel xorg-x11-server-Xwayland \
+  libxcb-devel meson ninja-build
+```
+</Accordion>
+
+<Accordion title="meson setup fails">
+Common meson issues:
+
+```bash
+# Clear build directory
+rm -rf build
+
+# Reconfigure with verbose output
+meson setup build -Dprefix=/usr --wipe
+
+# Check meson version (need >= 0.60)
+meson --version
+
+# Update if needed
+pip install --user --upgrade meson
+```
+</Accordion>
+
+## Startup Issues
+
+<Accordion title="Mango fails to start from TTY">
+Check common causes:
+
+1. **Already running session:**
+```bash
+# Check if another compositor is running
+echo $WAYLAND_DISPLAY
+echo $DISPLAY
+
+# Kill existing session
+pkill -x mango
+```
+
+2. **Permission issues:**
+```bash
+# Check seat permissions
+ls -l /dev/dri/
+groups  # Should include 'video' and 'input'
+
+# Add user to groups if missing
+sudo usermod -a -G video,input $USER
+# Logout and login again
+```
+
+3. **seatd not running:**
+```bash
+# Start seatd
+sudo systemctl enable --now seatd
+sudo systemctl status seatd
+```
+
+4. **Check logs:**
+```bash
+mango 2>&1 | tee ~/mango.log
+```
+</Accordion>
+
+<Accordion title="Black screen after starting Mango">
+This usually means Mango started but no programs launched.
+
+**Quick fix:**
+Press `Alt+Return` to open a terminal (default: foot)
+
+**Permanent fix:**
+Create autostart.sh:
+```bash
+mkdir -p ~/.config/mango
+cat > ~/.config/mango/autostart.sh << 'EOF'
+#!/bin/bash
+# Background image
+swaybg -i ~/Pictures/wallpaper.jpg &
+
+# Status bar
+waybar &
+
+# Terminal (optional)
+foot &
+EOF
+
+chmod +x ~/.config/mango/autostart.sh
+```
+</Accordion>
+
+<Accordion title="Stuck at login screen / display manager loop">
+**From display manager:**
+1. Switch to TTY (Ctrl+Alt+F3)
+2. Login
+3. Check logs:
+```bash
+journalctl -b -0 --user  # User session logs
+journalctl -b -0 | grep mango  # System logs
+```
+
+**Common causes:**
+- Missing config file (Mango will still start)
+- Crash in autostart.sh
+- Permission errors
+
+**Test manually:**
+```bash
+# From TTY
+mango
+```
+</Accordion>
+
+<Accordion title="Error: 'bad display' when starting mmsg">
+`mmsg` cannot connect to Mango.
+
+**Check:**
+```bash
+echo $WAYLAND_DISPLAY  # Should show "wayland-0" or similar
+echo $XDG_RUNTIME_DIR  # Should be /run/user/YOUR_UID
+ls $XDG_RUNTIME_DIR/$WAYLAND_DISPLAY  # Socket should exist
+```
+
+**Fix:**
+```bash
+# Ensure variables are set
+export XDG_RUNTIME_DIR="/run/user/$(id -u)"
+export WAYLAND_DISPLAY="wayland-0"
+```
+</Accordion>
+
+## Configuration Issues
+
+<Accordion title="Config changes don't apply">
+After editing `~/.config/mango/config.conf`:
+
+1. **Reload config:** Press `Super+R` (if bound) or:
+```bash
+mmsg -s -d "reload_config"
+```
+
+2. **Verify syntax:**
+```bash
+# Check for errors
+grep -v "^#" ~/.config/mango/config.conf | grep -v "^$"
+```
+
+3. **Common syntax errors:**
+- Extra spaces: `bind=Alt, Return` (wrong) vs `bind=Alt,Return` (correct)
+- Typos in command names
+- Invalid modifier keys
+
+4. **Restart if needed:**
+```bash
+mmsg -s -q  # Quit
+mango       # Restart
+```
+</Accordion>
+
+<Accordion title="Keybindings don't work">
+**Debug steps:**
+
+1. **Test key names:**
+```bash
+# Install wev
+yay -S wev  # or equivalent
+
+# Run in Mango
+wev
+# Press keys to see their names
+```
+
+2. **Check modifier syntax:**
+```
+Super = Windows key
+Alt = Alt key
+Ctrl = Control key
+Shift = Shift key
+
+# Multiple modifiers
+Super+Shift  (correct)
+SUPER+SHIFT  (wrong - case sensitive)
+```
+
+3. **Verify binding exists:**
+```bash
+grep "^bind=" ~/.config/mango/config.conf
+```
+
+4. **Test with simple binding:**
+```bash
+echo "bind=SUPER,t,spawn,foot" >> ~/.config/mango/config.conf
+mmsg -s -d "reload_config"
+```
+</Accordion>
+
+<Accordion title="Autostart script doesn't run">
+**Check script:**
+
+1. **Make executable:**
+```bash
+chmod +x ~/.config/mango/autostart.sh
+```
+
+2. **Verify shebang:**
+```bash
+head -1 ~/.config/mango/autostart.sh
+# Should be: #!/bin/bash
+```
+
+3. **Test manually:**
+```bash
+~/.config/mango/autostart.sh
+```
+
+4. **Check for errors:**
+```bash
+# Add to top of autostart.sh
+exec 2> ~/.config/mango/autostart.log
+set -x
+
+# Check log after starting Mango
+cat ~/.config/mango/autostart.log
+```
+
+5. **Common issues:**
+- Missing `&` for background processes
+- Commands exit with errors
+- Missing dependencies
+</Accordion>
+
+<Accordion title="Window rules not applied">
+Mango doesn't have built-in window rules like Hyprland. Instead:
+
+1. **Use custom script** (see [Custom Scripts](/advanced/custom-scripts)):
+```bash
+cat > ~/.config/mango/scripts/window-rules.sh << 'EOF'
+#!/bin/bash
+mmsg -w -c | while read -r output type value; do
+    if [ "$type" = "appid" ]; then
+        case "$value" in
+            firefox) mmsg -s -c 2 ;;
+            spotify) mmsg -s -c 9 && mmsg -s -d "togglefloating" ;;
+        esac
+    fi
+done
+EOF
+
+chmod +x ~/.config/mango/scripts/window-rules.sh
+```
+
+2. **Add to autostart.sh:**
+```bash
+~/.config/mango/scripts/window-rules.sh &
+```
+</Accordion>
+
+## Display Issues
+
+<Accordion title="Screen tearing or stuttering">
+**Try these fixes:**
+
+1. **Disable animations:**
+```bash
+echo "animations=0" >> ~/.config/mango/config.conf
+mmsg -s -d "reload_config"
+```
+
+2. **Optimize blur:**
+```bash
+# Reduce blur or disable
+blur=0
+# Or use optimized mode
+blur_optimized=1
+blur_params_num_passes=1
+```
+
+3. **Check GPU drivers:**
+```bash
+# Check current driver
+lspci -k | grep -A 3 -E "(VGA|3D)"
+
+# For AMD, ensure AMDGPU is used
+# For NVIDIA, use proprietary drivers
+```
+</Accordion>
+
+<Accordion title="Multi-monitor issues">
+**List outputs:**
+```bash
+mmsg -O
+```
+
+**Common issues:**
+
+1. **Monitor not detected:**
+```bash
+# Check kernel sees it
+ls /sys/class/drm/
+dmesg | grep -i drm
+```
+
+2. **Wrong resolution:**
+Mango auto-detects. If wrong:
+```bash
+# Use wlr-randr to check
+wlr-randr
+
+# Set mode manually (may need wlr-randr or similar tool)
+```
+
+3. **Monitor arrangement:**
+Currently manual via `mmsg`:
+```bash
+# Focus specific output
+mmsg -s -o "HDMI-A-1" -t 1
+
+# Move window to output
+mmsg -s -o "HDMI-A-1" -d "tagmon,left"
+```
+</Accordion>
+
+<Accordion title="Blurry applications (HiDPI issues)">
+**Set scale factor:**
+
+Mango should auto-detect, but you can verify:
+```bash
+# Check current scale
+mmsg -g -A
+```
+
+**For specific applications:**
+```bash
+# Qt apps
+export QT_SCALE_FACTOR=2
+
+# GTK apps (already handles wayland scaling)
+# Should work automatically
+
+# Electron apps
+export ELECTRON_OZONE_PLATFORM_HINT=wayland
+```
+
+Add to autostart.sh or ~/.bashrc
+</Accordion>
+
+<Accordion title="XWayland apps don't display">
+**Check XWayland:**
+
+```bash
+# Verify XWayland is installed
+which Xwayland
+
+# Check if running
+ps aux | grep Xwayland
+
+# Check DISPLAY variable
+echo $DISPLAY  # Should be something like :0
+```
+
+**Enable XWayland in NixOS:**
+```nix
+programs.xwayland.enable = true;
+```
+
+**Test XWayland app:**
+```bash
+xeyes  # Should show classic X11 eyes
+```
+</Accordion>
+
+## Window Management Issues
+
+<Accordion title="Windows spawn on wrong tag/workspace">
+Mango lacks built-in window rules. Use a script:
+
+```bash
+# See Custom Scripts guide
+~/.config/mango/scripts/window-rules.sh
+```
+
+Alternatively, manually move after spawn:
+```bash
+# Move to tag 3
+mmsg -s -c 3
+```
+</Accordion>
+
+<Accordion title="Can't focus window with mouse">
+Check `sloppyfocus` setting:
+
+```bash
+grep "sloppyfocus" ~/.config/mango/config.conf
+```
+
+**Enable:**
+```bash
+sloppyfocus=1  # Focus follows mouse
+warpcursor=1   # Cursor warps to focused window
+```
+
+**Disable:**
+```bash
+sloppyfocus=0  # Click to focus
+```
+</Accordion>
+
+<Accordion title="Floating windows don't stay floating">
+Mango determines floating on a per-window basis. To keep window floating:
+
+```bash
+# Toggle floating
+mmsg -s -d "togglefloating"
+
+# Check current state
+mmsg -g -f
+```
+
+**Bind to key:**
+```bash
+bind=ALT,backslash,togglefloating,
+```
+</Accordion>
+
+<Accordion title="Gaps not working">
+**Check gap settings:**
+```bash
+grep "gap" ~/.config/mango/config.conf
+
+# Should have:
+gappih=5   # Horizontal inner
+gappiv=5   # Vertical inner
+gappoh=10  # Horizontal outer
+gappov=10  # Vertical outer
+smartgaps=0  # 0=always show gaps, 1=hide when single window
+```
+
+**Toggle gaps:**
+```bash
+# Keybind
+bind=ALT+SHIFT,R,togglegaps
+
+# Via mmsg
+mmsg -s -d "togglegaps"
+```
+</Accordion>
+
+## Input Issues
+
+<Accordion title="Keyboard layout not applied">
+**Set in config.conf:**
+```bash
+xkb_rules_layout=us
+# Or for multiple layouts:
+xkb_rules_layout=us,ru
+```
+
+**Check current layout:**
+```bash
+mmsg -g -k
+```
+
+**For multiple layouts, use setxkbmap:**
+```bash
+# In autostart.sh
+setxkbmap -layout "us,ru" -option "grp:alt_shift_toggle"
+```
+</Accordion>
+
+<Accordion title="Trackpad not working properly">
+**Configure trackpad in config.conf:**
+
+```bash
+# Enable tap to click
+tap_to_click=1
+
+# Natural scrolling
+trackpad_natural_scrolling=1
+
+# Disable while typing
+disable_while_typing=1
+
+# Two-finger right click
+tap_and_drag=1
+```
+
+**Note:** Requires re-login to apply.
+</Accordion>
+
+<Accordion title="Keyboard repeat rate too fast/slow">
+**Adjust in config.conf:**
+```bash
+repeat_rate=25    # Characters per second
+repeat_delay=600  # Milliseconds before repeat starts
+```
+</Accordion>
+
+<Accordion title="Input method (IME) not working">
+Mango supports text-input-v2 and text-input-v3.
+
+**For fcitx5:**
+```bash
+# Install fcitx5 with wayland support
+yay -S fcitx5-im fcitx5-chinese-addons
+
+# Add to ~/.bashrc or ~/.profile
+export GTK_IM_MODULE=fcitx
+export QT_IM_MODULE=fcitx
+export XMODIFIERS=@im=fcitx
+export GLFW_IM_MODULE=ibus  # For some apps
+
+# Start in autostart.sh
+fcitx5 -d &
+```
+</Accordion>
+
+## IPC / mmsg Issues
+
+<Accordion title="mmsg commands fail silently">
+**Debug mmsg:**
+
+```bash
+# Verify connection
+mmsg -T  # Should output tag count
+
+# Check display
+echo $WAYLAND_DISPLAY
+
+# Test with verbose command
+strace mmsg -g -t 2>&1 | grep -i "connect\|socket"
+```
+
+**Common issues:**
+- mmsg from different version than mango
+- Incorrect environment variables
+- Mango not running
+</Accordion>
+
+<Accordion title="Watch mode (-w) stops receiving events">
+This can happen if the compositor is busy or if there's a pipe issue.
+
+**Restart watch script:**
+```bash
+pkill -f "mmsg -w"
+~/.config/mango/scripts/your-watch-script.sh &
+```
+
+**Make watch scripts resilient:**
+```bash
+#!/bin/bash
+while true; do
+    mmsg -w -t | while read -r line; do
+        # Process events
+    done
+    echo "mmsg disconnected, restarting..." >&2
+    sleep 1
+done
+```
+</Accordion>
+
+## Performance Issues
+
+<Accordion title="High CPU usage">
+**Common causes:**
+
+1. **Animation/effects:**
+```bash
+# Disable temporarily
+animations=0
+blur=0
+shadows=0
+```
+
+2. **Too many watch scripts:**
+```bash
+# Check running scripts
+ps aux | grep mmsg
+pkill -f "mmsg -w"  # Kill all watch processes
+```
+
+3. **Check compositor:**
+```bash
+top  # Check mango CPU usage
+```
+</Accordion>
+
+<Accordion title="High memory usage">
+**Check:**
+```bash
+ps aux | grep mango
+# If memory grows over time, may be a leak
+```
+
+**Report issue** with:
+```bash
+# Memory info
+cat /proc/$(pgrep mango)/status | grep -i mem
+
+# Valgrind (for developers)
+valgrind --leak-check=full mango
+```
+</Accordion>
+
+## Reporting Issues
+
+When reporting bugs, include:
+
+1. **System info:**
+```bash
+uname -a
+lspci | grep VGA
+mango --version
+```
+
+2. **Logs:**
+```bash
+mango 2>&1 | tee ~/mango-error.log
+```
+
+3. **Configuration:**
+```bash
+cat ~/.config/mango/config.conf
+cat ~/.config/mango/autostart.sh
+```
+
+4. **Steps to reproduce**
+
+**Submit to:** [GitHub Issues](https://github.com/mangowm/mango/issues)
+
+## See Also
+
+- [mmsg IPC Tool](/advanced/mmsg-ipc-tool) - IPC tool reference
+- [Custom Scripts](/advanced/custom-scripts) - Scripting examples
+- [NixOS Integration](/advanced/nixos-integration) - NixOS-specific issues
+- [Configuration Reference](/reference/config-options) - All config options

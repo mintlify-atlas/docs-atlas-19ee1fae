@@ -1,0 +1,564 @@
+---
+title: Custom Scripts
+description: Write custom shell scripts to extend Mango compositor functionality
+---
+
+Mango's flexibility allows you to extend its functionality through custom shell scripts. This guide covers common scripting patterns, practical examples, and integration techniques.
+
+## Script Basics
+
+### Configuration Integration
+
+Bind scripts to keybindings in `~/.config/mango/config.conf`:
+
+```bash
+# Single-line command
+bind=SUPER,p,spawn,~/.config/mango/scripts/screenshot.sh
+
+# Complex command with arguments
+bind=SUPER+SHIFT,p,spawn,~/.config/mango/scripts/screenshot.sh --area
+
+# Multiple commands
+bind=SUPER,w,spawn,sh -c "notify-send 'Info' && ~/.config/mango/scripts/info.sh"
+```
+
+### Autostart Scripts
+
+Place initialization scripts in `~/.config/mango/autostart.sh`:
+
+```bash
+#!/bin/bash
+
+# Start status bar
+waybar &
+
+# Set wallpaper
+swww init &
+sleep 1
+swww img ~/Pictures/wallpaper.jpg &
+
+# Start notification daemon
+swaync &
+
+# Clipboard manager
+wl-paste --watch cliphist store &
+
+# Night light
+wlsunset -l 39.9 -L 116.3 &
+
+# Custom status updater
+~/.config/mango/scripts/status-monitor.sh &
+```
+
+## Using mmsg in Scripts
+
+### Query Current State
+
+```bash
+#!/bin/bash
+# Get current workspace/tag
+current_tag=$(mmsg -g -t | grep "1.*1$" | head -1 | awk '{print $3}')
+echo "Current tag: $current_tag"
+
+# Get focused window
+window_title=$(mmsg -g -c | grep "title" | cut -d' ' -f3-)
+window_appid=$(mmsg -g -c | grep "appid" | cut -d' ' -f3-)
+echo "Focused: $window_title ($window_appid)"
+
+# Get current layout
+layout=$(mmsg -g -l | awk '{print $3}')
+echo "Layout: $layout"
+
+# Check fullscreen status
+if mmsg -g -m | grep -q "fullscreen 1"; then
+    echo "Window is fullscreen"
+fi
+```
+
+### Control Compositor
+
+```bash
+#!/bin/bash
+# Switch tags programmatically
+mmsg -s -t 3
+
+# Toggle floating for current window
+mmsg -s -d "togglefloating"
+
+# Move window to different tag
+mmsg -s -c 5
+
+# Change layout
+mmsg -s -l scroller
+
+# Move window with specific offset
+mmsg -s -d "movewin,+100,+50"
+
+# Spawn application
+mmsg -s -d "spawn,foot"
+```
+
+## Practical Script Examples
+
+### Smart Screenshot Tool
+
+```bash
+#!/bin/bash
+# ~/.config/mango/scripts/screenshot.sh
+
+SCREENSHOT_DIR="$HOME/Pictures/Screenshots"
+mkdir -p "$SCREENSHOT_DIR"
+
+TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+FILENAME="$SCREENSHOT_DIR/screenshot_$TIMESTAMP.png"
+
+case "${1:-full}" in
+    full)
+        # Full screen
+        grim "$FILENAME"
+        ;;
+    area)
+        # Select area
+        grim -g "$(slurp)" "$FILENAME"
+        ;;
+    window)
+        # Current window geometry
+        GEOMETRY=$(mmsg -g -x | awk '
+            /^x/ {x=$3}
+            /^y/ {y=$3}
+            /^width/ {w=$3}
+            /^height/ {h=$3}
+            END {printf "%d,%d %dx%d", x, y, w, h}
+        ')
+        grim -g "$GEOMETRY" "$FILENAME"
+        ;;
+    edit)
+        # Screenshot and edit
+        grim -g "$(slurp)" - | satty --filename - --output-filename "$FILENAME"
+        ;;
+esac
+
+if [ -f "$FILENAME" ]; then
+    wl-copy < "$FILENAME"
+    notify-send "Screenshot" "Saved to $FILENAME" -i "$FILENAME"
+fi
+```
+
+Bind in config.conf:
+```bash
+bind=SUPER,Print,spawn,~/.config/mango/scripts/screenshot.sh full
+bind=SUPER+SHIFT,Print,spawn,~/.config/mango/scripts/screenshot.sh area
+bind=SUPER+ALT,Print,spawn,~/.config/mango/scripts/screenshot.sh window
+```
+
+### Dynamic Workspace Manager
+
+```bash
+#!/bin/bash
+# ~/.config/mango/scripts/workspace-manager.sh
+
+# Jump to next occupied workspace
+next_occupied() {
+    local current=$(mmsg -g -t | awk '/tag.*1 [0-9]+ 1$/ {print $3; exit}')
+    local next=$current
+    
+    for i in {1..9}; do
+        next=$(( (next % 9) + 1 ))
+        local clients=$(mmsg -g -t | awk -v tag=$next '$3 == tag {print $5}')
+        if [ "$clients" -gt 0 ] && [ "$next" -ne "$current" ]; then
+            mmsg -s -t "$next"
+            return
+        fi
+    done
+}
+
+# Move window to next empty workspace
+move_to_empty() {
+    for i in {1..9}; do
+        local clients=$(mmsg -g -t | awk -v tag=$i '$3 == tag {print $5}')
+        if [ "$clients" -eq 0 ]; then
+            mmsg -s -c "$i"
+            mmsg -s -t "$i"
+            notify-send "Moved to workspace $i"
+            return
+        fi
+    done
+    notify-send "No empty workspace available"
+}
+
+# Rename workspace (visual only, via status bar)
+rename_workspace() {
+    local current=$(mmsg -g -t | awk '/tag.*1 [0-9]+ 1$/ {print $3; exit}')
+    local name=$(echo "" | rofi -dmenu -p "Workspace $current name:")
+    if [ -n "$name" ]; then
+        echo "$current:$name" >> ~/.config/mango/workspace-names
+    fi
+}
+
+case "$1" in
+    next) next_occupied ;;
+    move-empty) move_to_empty ;;
+    rename) rename_workspace ;;
+    *) echo "Usage: $0 {next|move-empty|rename}" ;;
+esac
+```
+
+### Layout Automation
+
+```bash
+#!/bin/bash
+# ~/.config/mango/scripts/auto-layout.sh
+# Automatically switch layouts based on window count
+
+while true; do
+    # Get current tag and window count
+    current_tag=$(mmsg -g -t | awk '/tag.*1 [0-9]+ 1$/ {print $3; exit}')
+    window_count=$(mmsg -g -t | awk -v tag=$current_tag '$3 == tag {print $5}')
+    current_layout=$(mmsg -g -l | awk '{print $3}')
+    
+    # Determine optimal layout
+    if [ "$window_count" -eq 1 ]; then
+        optimal="monocle"
+    elif [ "$window_count" -eq 2 ]; then
+        optimal="tile"
+    elif [ "$window_count" -le 4 ]; then
+        optimal="grid"
+    else
+        optimal="scroller"
+    fi
+    
+    # Switch if different
+    if [ "$current_layout" != "$optimal" ]; then
+        mmsg -s -l "$optimal"
+        notify-send "Layout" "Switched to $optimal ($window_count windows)"
+    fi
+    
+    sleep 2
+done
+```
+
+### Window Monitor & Logger
+
+```bash
+#!/bin/bash
+# ~/.config/mango/scripts/window-logger.sh
+# Track window focus for productivity monitoring
+
+LOG_FILE="$HOME/.local/share/mango/window-log.csv"
+mkdir -p "$(dirname "$LOG_FILE")"
+
+# Initialize log
+if [ ! -f "$LOG_FILE" ]; then
+    echo "timestamp,appid,title,tag" > "$LOG_FILE"
+fi
+
+previous_title=""
+previous_appid=""
+focus_start=$(date +%s)
+
+mmsg -w -c -t | while IFS=' ' read -r output type value; do
+    case "$type" in
+        title)
+            current_title="$value"
+            ;;
+        appid)
+            current_appid="$value"
+            ;;
+        tag)
+            # Parse tag info: tag_num state clients focused
+            tag_num=$(echo "$value" | awk '{print $1}')
+            focused=$(echo "$value" | awk '{print $4}')
+            
+            if [ "$focused" = "1" ]; then
+                # Window gained focus
+                now=$(date +%s)
+                duration=$((now - focus_start))
+                
+                # Log previous window if it had focus for >1 second
+                if [ -n "$previous_appid" ] && [ "$duration" -gt 1 ]; then
+                    timestamp=$(date -d "@$focus_start" +"%Y-%m-%d %H:%M:%S")
+                    echo "$timestamp,$previous_appid,$previous_title,$tag_num" >> "$LOG_FILE"
+                fi
+                
+                previous_title="$current_title"
+                previous_appid="$current_appid"
+                focus_start=$now
+            fi
+            ;;
+    esac
+done
+```
+
+### Status Bar Data Provider
+
+```bash
+#!/bin/bash
+# ~/.config/mango/scripts/status-data.sh
+# Provide JSON data for waybar or other status bars
+
+get_status() {
+    # Get tag info
+    local tag_info=$(mmsg -g -t)
+    local current_tag=$(echo "$tag_info" | awk '/tag.*1 [0-9]+ 1$/ {print $3; exit}')
+    local total_clients=$(echo "$tag_info" | awk '/clients/ {print $3; exit}')
+    
+    # Get window info
+    local window_info=$(mmsg -g -c)
+    local window_title=$(echo "$window_info" | awk '/^title/ {$1=$2=""; print substr($0,3)}')
+    local window_appid=$(echo "$window_info" | awk '/^appid/ {print $3}')
+    
+    # Get layout
+    local layout=$(mmsg -g -l | awk '{print $3}')
+    
+    # Get fullscreen status
+    local fullscreen="false"
+    if mmsg -g -m | grep -q "fullscreen 1"; then
+        fullscreen="true"
+    fi
+    
+    # Generate JSON
+    cat <<EOF
+{
+  "tag": $current_tag,
+  "clients": $total_clients,
+  "window": {
+    "title": "${window_title:-none}",
+    "appid": "${window_appid:-none}"
+  },
+  "layout": "$layout",
+  "fullscreen": $fullscreen
+}
+EOF
+}
+
+# Watch mode for continuous updates
+if [ "$1" = "--watch" ]; then
+    while true; do
+        get_status
+        sleep 1
+    done
+else
+    get_status
+fi
+```
+
+Integrate with waybar:
+```json
+"custom/mango": {
+    "exec": "~/.config/mango/scripts/status-data.sh",
+    "return-type": "json",
+    "interval": 1,
+    "format": "{} {icon}",
+    "format-icons": {
+        "tile": "\uf009",
+        "scroller": "\uf0db",
+        "monocle": "\uf2d0"
+    }
+}
+```
+
+### Per-Application Rules
+
+```bash
+#!/bin/bash
+# ~/.config/mango/scripts/window-rules.sh
+# Apply rules when windows open
+
+mmsg -w -c | while IFS=' ' read -r output type value; do
+    if [ "$type" = "appid" ]; then
+        case "$value" in
+            firefox)
+                # Move Firefox to tag 2
+                mmsg -s -c 2
+                ;;
+            spotify)
+                # Move Spotify to tag 9 and make it floating
+                mmsg -s -c 9
+                mmsg -s -d "togglefloating"
+                ;;
+            *terminal*|foot|alacritty)
+                # Terminals use scroller layout
+                mmsg -s -l scroller
+                ;;
+            "")
+                # Empty appid might be XWayland
+                title=$(mmsg -g -c | grep "title" | cut -d' ' -f3-)
+                case "$title" in
+                    *Steam*)
+                        mmsg -s -c 8
+                        mmsg -s -d "togglefloating"
+                        ;;
+                esac
+                ;;
+        esac
+    fi
+done
+```
+
+Start in autostart.sh:
+```bash
+~/.config/mango/scripts/window-rules.sh &
+```
+
+### Multi-Monitor Management
+
+```bash
+#!/bin/bash
+# ~/.config/mango/scripts/monitor-switch.sh
+
+# List all outputs
+list_outputs() {
+    mmsg -O
+}
+
+# Switch focus to specific output
+focus_output() {
+    local output="$1"
+    mmsg -s -o "$output" -t 1
+}
+
+# Move current window to output
+move_to_output() {
+    local output="$1"
+    # This requires dispatch command support
+    mmsg -s -o "$output" -d "tagmon,$output"
+}
+
+# Get current output name
+get_current_output() {
+    mmsg -g -O | grep -v "^+" | head -1
+}
+
+case "$1" in
+    list) list_outputs ;;
+    focus) focus_output "$2" ;;
+    move) move_to_output "$2" ;;
+    current) get_current_output ;;
+    *) echo "Usage: $0 {list|focus|move|current} [output]" ;;
+esac
+```
+
+## Script Best Practices
+
+### Error Handling
+
+```bash
+#!/bin/bash
+set -euo pipefail  # Exit on error, undefined vars, pipe failures
+
+# Check if mmsg is available
+if ! command -v mmsg &> /dev/null; then
+    notify-send "Error" "mmsg not found"
+    exit 1
+fi
+
+# Check if Mango is running
+if ! mmsg -T &> /dev/null; then
+    notify-send "Error" "Cannot connect to Mango"
+    exit 1
+fi
+```
+
+### Performance Considerations
+
+```bash
+# BAD: Repeatedly calling mmsg in loop
+for i in {1..100}; do
+    mmsg -g -t > /dev/null
+done
+
+# GOOD: Use watch mode for continuous monitoring
+mmsg -w -t | while read -r line; do
+    # Process events as they come
+    process_event "$line"
+done
+```
+
+### Debugging
+
+```bash
+#!/bin/bash
+# Enable debug output
+DEBUG=1
+
+debug() {
+    [ "$DEBUG" = "1" ] && echo "[DEBUG] $*" >&2
+}
+
+debug "Starting script"
+result=$(mmsg -g -t)
+debug "Tag info: $result"
+```
+
+## Integration with External Tools
+
+### Rofi Menu Integration
+
+```bash
+#!/bin/bash
+# ~/.config/mango/scripts/rofi-workspace.sh
+# Interactive workspace switcher
+
+# Get workspace info
+mapfile -t workspaces < <(mmsg -g -t | awk '/^tag/ {
+    printf "Tag %s [%s windows]%s\n", $3, $5, ($4 == 1 ? " *" : "")
+}')
+
+# Show menu
+selected=$(printf "%s\n" "${workspaces[@]}" | rofi -dmenu -p "Switch to:")
+
+if [ -n "$selected" ]; then
+    tag=$(echo "$selected" | awk '{print $2}')
+    mmsg -s -t "$tag"
+fi
+```
+
+### Notification Integration
+
+```bash
+#!/bin/bash
+# Show notifications for important events
+
+mmsg -w -t | while IFS=' ' read -r output type value; do
+    if [ "$type" = "tag" ]; then
+        urgent=$(echo "$value" | awk '{print $2}')
+        if [ "$urgent" = "2" ]; then
+            tag_num=$(echo "$value" | awk '{print $1}')
+            notify-send -u critical "Attention" "Tag $tag_num needs attention"
+        fi
+    fi
+done
+```
+
+## Troubleshooting Scripts
+
+<Accordion title="Script doesn't execute from keybinding">
+Ensure the script is:
+1. Executable: `chmod +x ~/.config/mango/scripts/myscript.sh`
+2. Has correct shebang: `#!/bin/bash`
+3. Uses absolute paths for commands and files
+4. Test manually first: `~/.config/mango/scripts/myscript.sh`
+</Accordion>
+
+<Accordion title="mmsg commands fail in script">
+Check environment variables:
+```bash
+# Add to script
+export WAYLAND_DISPLAY="${WAYLAND_DISPLAY:-wayland-0}"
+export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
+```
+</Accordion>
+
+<Accordion title="Background scripts don't persist">
+Ensure scripts:
+1. Run in background: `script.sh &`
+2. Don't exit on error: Remove `set -e` or handle errors
+3. Have proper loops for continuous operation
+4. Log to files for debugging: `exec 2> ~/.config/mango/script.log`
+</Accordion>
+
+## See Also
+
+- [mmsg IPC Tool](/advanced/mmsg-ipc-tool) - Complete mmsg reference
+- [Configuration](/configuration/keybindings) - Keybinding configuration
+- [Troubleshooting](/advanced/troubleshooting) - General issues

@@ -1,0 +1,172 @@
+---
+title: 'Guix System Installation'
+description: 'Install Mango Wayland Compositor on Guix System'
+---
+
+## Installation via Guix Channel
+
+Mango provides a Guix channel with package definitions for easy installation.
+
+<Steps>
+  <Step title="Add Mango channel">
+    Add the Mango channel to your `channels.scm` file:
+    
+    ```scheme ~/.config/guix/channels.scm
+    ;; In $HOME/.config/guix/channels.scm
+    (cons (channel
+            (name 'mangowm)
+            (url "https://github.com/mangowm/mango.git")
+            (branch "main"))
+          ... ;; Your other channels
+          %default-channels)
+    ```
+  </Step>
+  
+  <Step title="Update channels">
+    Run `guix pull` to update your channels:
+    
+    ```bash
+    guix pull
+    ```
+    
+    This will download the channel and make the Mango package available.
+  </Step>
+  
+  <Step title="Install Mango">
+    After updating, you can install Mango in two ways:
+    
+    <Tabs>
+      <Tab title="User Profile">
+        Install directly to your user profile:
+        
+        ```bash
+        guix install mangowm
+        ```
+      </Tab>
+      
+      <Tab title="System Configuration">
+        Add to your system configuration:
+        
+        ```scheme /etc/config.scm
+        (use-modules (mangowm)) ;; Add mangowm module
+        
+        (operating-system
+          ;; ... your other configuration
+          
+          ;; Add mangowm to packages list
+          (packages (cons*
+                      mangowm-git
+                      ... ;; Other packages you specified
+                      %base-packages)))
+        ```
+        
+        Then reconfigure your system:
+        
+        ```bash
+        sudo guix system reconfigure /etc/config.scm
+        ```
+      </Tab>
+    </Tabs>
+  </Step>
+  
+  <Step title="Launch Mango">
+    After installation, you can start Mango from a TTY:
+    
+    ```bash
+    mango
+    ```
+    
+    Or select it from your display manager's session list.
+  </Step>
+</Steps>
+
+## System Configuration Example
+
+Here's a complete example of adding Mango to your system configuration:
+
+```scheme /etc/config.scm
+(use-modules
+  (gnu)
+  (gnu system)
+  (gnu packages wm)
+  (mangowm))  ;; Import mangowm module
+
+(operating-system
+  (host-name "my-system")
+  (timezone "UTC")
+  (locale "en_US.utf8")
+  
+  ;; Add Mango and related packages
+  (packages (cons*
+              mangowm-git
+              foot            ;; Terminal emulator
+              rofi            ;; Application launcher
+              waybar          ;; Status bar
+              swaybg          ;; Wallpaper setter
+              %base-packages))
+  
+  ;; ... rest of your configuration
+  )
+```
+
+## Dependencies
+
+Guix will automatically install these dependencies:
+
+- wayland (>=1.23.1)
+- wayland-protocols
+- libinput (>=1.27.1)
+- libxkbcommon
+- pcre2
+- pixman
+- wlroots (0.19.x)
+- scenefx (0.4.x)
+- xwayland (for X11 app support)
+- libxcb
+
+## Suggested Packages
+
+Add these packages for a complete Wayland environment:
+
+```scheme
+(packages (cons*
+            mangowm-git
+            
+            ;; Terminal emulator
+            foot
+            
+            ;; Application launcher
+            rofi
+            
+            ;; Status bar
+            waybar
+            
+            ;; Wallpaper
+            swaybg
+            
+            ;; Clipboard
+            wl-clipboard
+            
+            ;; Screenshots
+            grim
+            slurp
+            
+            ;; Notifications
+            mako
+            
+            ;; Authentication
+            polkit
+            
+            %base-packages))
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Configuration" icon="gear" href="/configuration/overview">
+    Configure Mango to your preferences
+  </Card>
+  <Card title="Keybindings" icon="keyboard" href="/configuration/keybindings">
+    Learn default keybindings and create custom ones
+  </Card>
+</CardGroup>

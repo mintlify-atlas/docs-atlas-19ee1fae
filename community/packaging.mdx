@@ -1,0 +1,192 @@
+---
+title: Packaging Guidelines
+description: Guidelines for packaging Mango for different distributions
+---
+
+## Packaging Mango
+
+Mango welcomes distribution maintainers to package the compositor for their distributions. This guide provides reference implementations and guidelines for creating packages.
+
+[![Packaging status](https://repology.org/badge/vertical-allrepos/mangowm.svg)](https://repology.org/project/mangowm/versions)
+
+## Reference Implementations
+
+Before creating a new package, check these reference implementations:
+
+- [Nix](https://github.com/mangowm/mango/blob/main/nix/default.nix)
+- [Arch Linux (AUR)](https://aur.archlinux.org/cgit/aur.git/tree/PKGBUILD?h=mangowm-git)
+- [Gentoo](https://data.gpo.zugaina.org/guru/gui-wm/mangowm)
+
+## Build System
+
+Mango uses Meson as its build system:
+
+```bash
+meson build -Dprefix=/usr
+ninja -C build
+ninja -C build install
+```
+
+## Dependencies
+
+### Required Dependencies
+
+- wayland
+- wayland-protocols
+- libinput
+- libdrm
+- libxkbcommon
+- pixman
+- libdisplay-info
+- libliftoff
+- hwdata
+- seatd
+- pcre2
+- xorg-xwayland
+- libxcb
+
+### Build Dependencies
+
+- meson
+- ninja
+- pkg-config
+- gcc or clang
+
+### Special Dependency: scenefx
+
+Mango requires `scenefx` for window effects (blur, shadow, corner radius, opacity). You might need to package `scenefx` first for your distribution.
+
+Check scenefx availability:
+- Repository: [scenefx](https://github.com/wlrfx/scenefx)
+- Version used by Mango: 0.4.1
+
+```bash
+git clone -b 0.4.1 https://github.com/wlrfx/scenefx.git
+cd scenefx
+meson build -Dprefix=/usr
+ninja -C build install
+```
+
+### wlroots Dependency
+
+Mango requires a specific version of wlroots:
+
+- Version: 0.19.2
+
+```bash
+git clone -b 0.19.2 https://gitlab.freedesktop.org/wlroots/wlroots.git
+cd wlroots
+meson build -Dprefix=/usr
+ninja -C build install
+```
+
+## Current Distribution Support
+
+### Arch Linux
+
+Available in AUR:
+
+```bash
+yay -S mangowm-git
+```
+
+### Gentoo Linux
+
+Available in GURU repository:
+
+```bash
+emerge --ask --verbose eselect-repository
+eselect repository enable guru
+emerge --sync guru
+# Add gui-libs/scenefx and gui-wm/mangowm to package.accept_keywords
+emerge --ask --verbose gui-wm/mangowm
+```
+
+### Fedora Linux
+
+Available in Terra repository:
+
+```bash
+# First add Terra Repository: https://terra.fyralabs.com/
+dnf install mangowm
+```
+
+### Guix System
+
+Package definition in source repository:
+
+```scheme
+;; In $HOME/.config/guix/channels.scm
+(cons (channel
+        (name 'mangowm)
+        (url "https://github.com/mangowm/mango.git")
+        (branch "main"))
+      ... ;; Your other channels
+      %default-channels)
+```
+
+Then:
+
+```bash
+guix pull
+guix install mangowm
+```
+
+### NixOS
+
+Flake support with NixOS and home-manager modules:
+
+```nix
+{
+  inputs = {
+    mango = {
+      url = "github:mangowm/mango";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+  };
+}
+```
+
+See the [NixOS Installation Guide](/installation/nixos) for complete configuration.
+
+## Packaging Tips
+
+### Build Time
+
+Mango is lightweight and builds completely within a few seconds, making it easy to test package builds.
+
+### Configuration Files
+
+Mango uses external configuration files that support hot-reload. Ensure your package includes default configuration or provides clear documentation on where to find example configurations.
+
+Example configurations:
+- [Daily config](https://github.com/DreamMaoMao/mango-config.git)
+- [DMS config](https://github.com/DreamMaoMao/mango-config.git) (branch: dms)
+
+### Getting Help
+
+If you encounter build errors when packaging Mango:
+
+1. Read your distribution's packaging documentation first (RTFM)
+2. Check reference implementations for similar distributions
+3. Create an issue on GitHub with:
+   - Distribution and version
+   - Build error logs
+   - Steps you've already tried
+
+## Submitting Your Package
+
+Once you've successfully packaged Mango:
+
+1. Submit to your distribution's package repository
+2. Let us know on [Discord](https://discord.gg/CPjbDxesh5) or create a PR to update this documentation
+3. Your package will appear on [Repology](https://repology.org/project/mangowm/versions)
+
+## Maintenance
+
+Mango prioritizes stability and doesn't make many breaking changes. However, keep an eye on:
+
+- wlroots version updates
+- scenefx version updates
+- Dependency changes
+- Configuration format changes (rare)

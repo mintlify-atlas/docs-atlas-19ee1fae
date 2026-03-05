@@ -1,0 +1,117 @@
+---
+title: 'Gentoo Linux Installation'
+description: 'Install Mango Wayland Compositor on Gentoo Linux'
+---
+
+## Installation from GURU
+
+Mango is available in the community-maintained GURU repository for Gentoo.
+
+<Steps>
+  <Step title="Enable GURU repository">
+    First, install `eselect-repository` if you don't have it:
+    
+    ```bash
+    emerge --ask --verbose eselect-repository
+    ```
+  </Step>
+  
+  <Step title="Add and sync GURU">
+    Enable the GURU repository and sync it:
+    
+    ```bash
+    eselect repository enable guru
+    emerge --sync guru
+    ```
+  </Step>
+  
+  <Step title="Accept keywords">
+    Add the required packages to your `package.accept_keywords` file:
+    
+    ```bash /etc/portage/package.accept_keywords/mango
+    gui-libs/scenefx ~amd64
+    gui-wm/mangowm ~amd64
+    ```
+    
+    <Note>
+      Replace `~amd64` with your architecture if different (e.g., `~arm64`).
+    </Note>
+  </Step>
+  
+  <Step title="Install Mango">
+    Install the package with Portage:
+    
+    ```bash
+    emerge --ask --verbose gui-wm/mangowm
+    ```
+  </Step>
+  
+  <Step title="Launch Mango">
+    After installation, you can start Mango from a TTY:
+    
+    ```bash
+    mango
+    ```
+    
+    Or select it from your display manager's session list.
+  </Step>
+</Steps>
+
+## Dependencies
+
+Portage will automatically install these dependencies:
+
+- wayland
+- wayland-protocols
+- libinput (>=1.27.1)
+- libdrm
+- libxkbcommon
+- pixman
+- libdisplay-info
+- libliftoff
+- hwdata
+- seatd
+- pcre2
+- xorg-xwayland
+- libxcb
+- wlroots (0.19.x)
+- scenefx (0.4.x)
+
+## Suggested Tools
+
+Install additional tools for a complete Wayland environment:
+
+<CodeGroup>
+```bash Application Launcher
+emerge --ask rofi
+# or
+emerge --ask bemenu
+```
+
+```bash Terminal Emulator
+emerge --ask foot
+# or
+emerge --ask alacritty
+```
+
+```bash Status Bar
+emerge --ask waybar
+```
+
+```bash Wallpaper
+emerge --ask swww
+# or
+emerge --ask swaybg
+```
+</CodeGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Configuration" icon="gear" href="/configuration/overview">
+    Configure Mango to your preferences
+  </Card>
+  <Card title="Keybindings" icon="keyboard" href="/configuration/keybindings">
+    Learn default keybindings and create custom ones
+  </Card>
+</CardGroup>

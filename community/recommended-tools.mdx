@@ -1,0 +1,224 @@
+---
+title: Recommended Tools
+description: Essential companion tools for Mango Wayland Compositor
+---
+
+## Companion Tools
+
+Mango is a window compositor and needs additional tools to create a complete desktop environment. This guide covers recommended tools for various components.
+
+## Hybrid Component
+
+<CardGroup cols={1}>
+  <Card title="dms-shell" icon="layer-group" href="https://github.com/AvengeMedia/DankMaterialShell">
+    Complete desktop shell solution providing integrated components for Mango
+  </Card>
+</CardGroup>
+
+## Essential Components
+
+### Application Launcher
+
+<CardGroup cols={2}>
+  <Card title="rofi" icon="rocket">
+    Popular application launcher and dmenu replacement with extensive customization
+  </Card>
+  <Card title="bemenu" icon="list">
+    Dynamic menu library for Wayland, simple and lightweight
+  </Card>
+  <Card title="wmenu" icon="bars">
+    Efficient menu for Wayland, suckless-style implementation
+  </Card>
+  <Card title="fuzzel" icon="magnifying-glass">
+    Application launcher for Wayland with fuzzy matching
+  </Card>
+</CardGroup>
+
+### Terminal Emulator
+
+<CardGroup cols={2}>
+  <Card title="foot" icon="terminal">
+    Fast, lightweight, and minimalistic Wayland terminal emulator (default in Mango)
+  </Card>
+  <Card title="wezterm" icon="window-maximize">
+    GPU-accelerated cross-platform terminal emulator with extensive features
+  </Card>
+  <Card title="alacritty" icon="bolt">
+    OpenGL-accelerated terminal emulator focused on simplicity and performance
+  </Card>
+  <Card title="kitty" icon="cat">
+    Feature-rich, GPU-based terminal emulator with image support
+  </Card>
+  <Card title="ghostty" icon="ghost">
+    Modern terminal emulator with native performance
+  </Card>
+</CardGroup>
+
+### Status Bar
+
+<CardGroup cols={2}>
+  <Card title="waybar" icon="bars" color="#00FF00">
+    Highly customizable Wayland bar (preferred choice for Mango)
+  </Card>
+  <Card title="eww" icon="widget">
+    ElKowars wacky widgets - build custom widgets with declarative syntax
+  </Card>
+  <Card title="quickshell" icon="gauge">
+    Simple and fast status bar for Wayland
+  </Card>
+  <Card title="ags" icon="code">
+    Aylur's Gtk Shell - build custom desktop shells with JavaScript
+  </Card>
+</CardGroup>
+
+<Note>
+Waybar is the preferred status bar for Mango and provides the best integration.
+</Note>
+
+### Wallpaper Setup
+
+<CardGroup cols={2}>
+  <Card title="swww" icon="image">
+    Efficient animated wallpaper daemon for Wayland with smooth transitions
+  </Card>
+  <Card title="swaybg" icon="panorama">
+    Wallpaper tool for Wayland compositors, simple and reliable
+  </Card>
+</CardGroup>
+
+### Notification Daemon
+
+<CardGroup cols={2}>
+  <Card title="swaync" icon="bell">
+    Notification daemon with a GTK-based notification center
+  </Card>
+  <Card title="dunst" icon="inbox">
+    Lightweight notification daemon with extensive customization
+  </Card>
+  <Card title="mako" icon="message">
+    Lightweight Wayland notification daemon
+  </Card>
+</CardGroup>
+
+### Desktop Portal
+
+<CardGroup cols={2}>
+  <Card title="xdg-desktop-portal" icon="door-open">
+    Base portal implementation for desktop integration
+  </Card>
+  <Card title="xdg-desktop-portal-wlr" icon="window-restore">
+    Backend for wlroots-based Wayland compositors like Mango
+  </Card>
+  <Card title="xdg-desktop-portal-gtk" icon="palette">
+    GTK implementation for file chooser and other portals
+  </Card>
+</CardGroup>
+
+### Clipboard Manager
+
+<CardGroup cols={2}>
+  <Card title="wl-clipboard" icon="clipboard">
+    Command-line copy/paste utilities for Wayland
+  </Card>
+  <Card title="wl-clip-persist" icon="database">
+    Keep clipboard contents after application closes
+  </Card>
+  <Card title="cliphist" icon="clock-rotate-left">
+    Clipboard history manager for Wayland
+  </Card>
+</CardGroup>
+
+### Gamma Control / Night Light
+
+<CardGroup cols={2}>
+  <Card title="wlsunset" icon="sun">
+    Day/night gamma adjustments for Wayland compositors
+  </Card>
+  <Card title="gammastep" icon="moon">
+    Adjust screen color temperature based on time of day
+  </Card>
+</CardGroup>
+
+### Miscellaneous
+
+<CardGroup cols={2}>
+  <Card title="xfce-polkit" icon="shield">
+    PolicyKit authentication agent for privilege escalation
+  </Card>
+  <Card title="wlogout" icon="power-off">
+    Logout menu for Wayland
+  </Card>
+</CardGroup>
+
+## Complete Setup Examples
+
+### Daily Setup
+
+Complete dependency list for a full-featured daily driver setup:
+
+```bash
+yay -S rofi foot xdg-desktop-portal-wlr swaybg waybar \
+  wl-clip-persist cliphist wl-clipboard wlsunset xfce-polkit \
+  swaync pamixer wlr-dpms sway-audio-idle-inhibit-git \
+  swayidle dimland-git brightnessctl swayosd wlr-randr \
+  grim slurp satty swaylock-effects-git wlogout sox
+```
+
+[View daily config](https://github.com/DreamMaoMao/mango-config.git)
+
+### DMS Setup
+
+Minimal setup using dms-shell hybrid component:
+
+```bash
+yay -S foot xdg-desktop-portal-wlr swaybg \
+  wl-clip-persist cliphist wl-clipboard \
+  sway-audio-idle-inhibit-git brightnessctl \
+  grim slurp satty matugen-bin dms-shell-git
+```
+
+[View DMS config](https://github.com/DreamMaoMao/mango-config.git) (branch: dms)
+
+## Additional Utilities
+
+### Screen Capture
+
+- **grim** - Screenshot utility for Wayland
+- **slurp** - Select a region in Wayland
+- **satty** - Screenshot annotation tool
+
+### Screen Lock
+
+- **swaylock-effects-git** - Screen locker with effects
+- **swayidle** - Idle management daemon
+
+### Audio Control
+
+- **pamixer** - PulseAudio mixer command-line tool
+- **sway-audio-idle-inhibit-git** - Prevent idle when audio is playing
+- **swayosd** - OSD window for volume/brightness
+
+### Display Management
+
+- **wlr-randr** - xrandr clone for wlroots compositors
+- **wlr-dpms** - Control display power management
+
+### Brightness Control
+
+- **brightnessctl** - Read and control device brightness
+
+### Power Management
+
+- **dimland-git** - Dim screen gradually before sleep
+
+## Default Keybindings
+
+Out of the box, Mango includes these keybindings for common tools:
+
+- `Alt + Return` - Open foot terminal
+- `Alt + Space` - Open rofi launcher
+- `Alt + Q` - Kill client
+- `Alt + Arrow Keys` - Focus direction
+- `Super + M` - Quit Mango
+
+These can be customized in your Mango configuration file.

@@ -1,0 +1,307 @@
+---
+title: "Scratchpad"
+description: "Sway-like scratchpad system for quick access to temporary windows"
+---
+
+Mango provides a powerful scratchpad feature inspired by Sway, allowing you to hide windows and quickly summon them as floating overlays. This is perfect for terminals, calculators, music players, or any application you need quick access to.
+
+## Overview
+
+The scratchpad is a hidden workspace where windows can be stored and recalled on demand:
+
+- **Hidden Storage**: Windows in scratchpad are hidden from all tags
+- **Floating Display**: Scratchpad windows appear centered as floating windows
+- **Quick Toggle**: Single keybinding to show/hide scratchpad windows
+- **Named Scratchpads**: Support for multiple independent scratchpads
+- **Configurable Size**: Control scratchpad window dimensions
+
+## Basic Usage
+
+### Toggle Scratchpad
+
+The primary scratchpad command shows/hides scratchpad windows:
+
+```conf
+# Toggle scratchpad visibility
+bind=ALT,z,toggle_scratchpad
+```
+
+**Behavior:**
+1. **When focused on normal window**: Move current window to scratchpad (hide it)
+2. **When scratchpad is hidden**: Show all scratchpad windows
+3. **When scratchpad is visible**: Hide all scratchpad windows
+4. **When focused on scratchpad window**: Hide that specific window
+
+### Basic Workflow
+
+<Steps>
+  <Step title="Send Window to Scratchpad">
+    Focus any window and press `ALT+z` to move it to scratchpad. The window disappears.
+  </Step>
+  <Step title="Recall from Scratchpad">
+    Press `ALT+z` again to show the scratchpad window as a floating overlay.
+  </Step>
+  <Step title="Hide Scratchpad">
+    While focused on scratchpad window, press `ALT+z` to hide it again.
+  </Step>
+</Steps>
+
+## Scratchpad Configuration
+
+### Size and Appearance
+
+Configure scratchpad window dimensions and appearance in `config.conf`:
+
+```conf
+# Scratchpad width as ratio of screen width (0.8 = 80%)
+scratchpad_width_ratio=0.8
+
+# Scratchpad height as ratio of screen height (0.9 = 90%)
+scratchpad_height_ratio=0.9
+
+# Border color for scratchpad windows
+scratchpadcolor=0x516c93ff
+
+# Border width (applies to all windows)
+borderpx=4
+```
+
+### Scratchpad Border Color
+
+Scratchpad windows have a distinct border color to differentiate them:
+
+- **Normal windows**: `bordercolor=0x444444ff`
+- **Focused windows**: `focuscolor=0xc9b890ff`  
+- **Scratchpad windows**: `scratchpadcolor=0x516c93ff`
+
+This visual distinction helps you quickly identify scratchpad windows.
+
+## Named Scratchpads
+
+Mango supports multiple independent scratchpads, allowing you to organize different quick-access windows.
+
+### Creating Named Scratchpads
+
+<Info>
+While named scratchpads are mentioned in the README as a feature, specific configuration syntax requires checking the wiki. The basic toggle_scratchpad command works for the default scratchpad.
+</Info>
+
+### Use Cases for Named Scratchpads
+
+<CardGroup cols={2}>
+  <Card title="Terminal Scratchpad" icon="terminal">
+    Quick access terminal for commands without cluttering workspace
+  </Card>
+  <Card title="Music Player" icon="music">
+    Control music playback without dedicated workspace
+  </Card>
+  <Card title="Calculator" icon="calculator">
+    Quick calculations while working on other tasks
+  </Card>
+  <Card title="Chat Application" icon="comments">
+    Monitor messages without permanent screen space
+  </Card>
+  <Card title="System Monitor" icon="chart-line">
+    Check system resources on demand
+  </Card>
+  <Card title="Notes" icon="note-sticky">
+    Quick access to scratchpad for temporary notes
+  </Card>
+</CardGroup>
+
+## Scratchpad Window Behavior
+
+### Floating Mode
+
+Scratchpad windows always appear as floating windows:
+- Centered on screen
+- Size controlled by `scratchpad_width_ratio` and `scratchpad_height_ratio`
+- Appear above tiled windows
+- Can be moved and resized like normal floating windows
+
+### Focus Behavior
+
+When showing scratchpad:
+- Scratchpad windows receive focus
+- Previous window focus is preserved
+- Hiding scratchpad returns focus to previous window
+
+### Multi-Monitor Support
+
+Scratchpad windows appear on the currently focused monitor:
+- Switch monitors, then toggle scratchpad
+- Scratchpad follows your focus
+- Size ratios apply to current monitor dimensions
+
+## Advanced Scratchpad Patterns
+
+### Dropdown Terminal
+
+Create a dropdown terminal setup:
+
+```conf
+# Quick dropdown terminal
+bind=F12,toggle_scratchpad
+```
+
+**Setup:**
+1. Launch terminal (foot, alacritty, etc.)
+2. Press F12 to send to scratchpad
+3. Press F12 anytime for instant terminal access
+
+### Task-Specific Windows
+
+Organize scratchpad by workflow:
+- **Development**: Terminal with development server
+- **Communication**: Chat or email client  
+- **Monitoring**: System monitor or log viewer
+- **Reference**: Documentation browser or PDF viewer
+
+### Quick Access Tools
+
+Ideal applications for scratchpad:
+- Password managers
+- Color pickers
+- Screenshot tools (configuration)
+- Clipboard managers
+- Weather widgets
+- Calendar applications
+
+## Scratchpad vs Minimized Windows
+
+Mango provides two ways to hide windows:
+
+| Feature | Scratchpad | Minimize |
+|---------|-----------|----------|
+| **Access** | Toggle binding | Restore binding |
+| **Display** | Floating centered | Returns to original position |
+| **Use Case** | Quick temporary access | Long-term hiding |
+| **Border Color** | Distinct scratchpad color | Normal border color |
+| **Focus** | Always brings to front | May be behind other windows |
+
+```conf
+# Minimize current window
+bind=SUPER,i,minimized,
+
+# Restore minimized windows
+bind=SUPER+SHIFT,I,restore_minimized
+```
+
+## Scratchpad Animations
+
+Scratchpad toggle supports smooth animations:
+
+```conf
+# Enable animations
+animations=1
+
+# Window open animation (when showing scratchpad)
+animation_duration_open=400
+animation_curve_open=0.46,1.0,0.29,1
+
+# Window close animation (when hiding scratchpad)
+animation_duration_close=800
+animation_curve_close=0.08,0.92,0,1
+
+# Fade effects
+animation_fade_in=1
+animation_fade_out=1
+```
+
+## Scratchpad Window States
+
+Scratchpad windows can have additional window states:
+
+### Global Windows
+
+Make scratchpad window visible on all tags:
+
+```conf
+# Toggle global state (visible on all tags)
+bind=SUPER,g,toggleglobal,
+```
+
+Combining scratchpad with global state:
+1. Window visible on all tags when scratchpad is shown
+2. Completely hidden when scratchpad is toggled off
+
+### Overlay Windows
+
+Make scratchpad always on top:
+
+```conf
+# Toggle overlay (always on top)
+bind=SUPER,o,toggleoverlay,
+```
+
+Useful for:
+- Reference material while coding
+- Chat windows during work
+- Monitoring dashboards
+
+## Tips and Best Practices
+
+<AccordionGroup>
+  <Accordion title="Use Single Keybinding">
+    Assign scratchpad toggle to an easy-to-reach key like `F12` or `ALT+Space` for instant access without thinking.
+  </Accordion>
+  
+  <Accordion title="Size for Readability">
+    Adjust `scratchpad_width_ratio` and `scratchpad_height_ratio` based on your applications. Terminal might need 0.8x0.6, calculator might need 0.4x0.5.
+  </Accordion>
+  
+  <Accordion title="Combine with Autostart">
+    Launch scratchpad applications in autostart.sh and immediately send them to scratchpad for instant availability.
+  </Accordion>
+  
+  <Accordion title="Visual Distinction">
+    Choose a distinct `scratchpadcolor` that stands out from normal window borders for easy identification.
+  </Accordion>
+</AccordionGroup>
+
+## Example Configuration
+
+Complete scratchpad setup example:
+
+```conf
+# Scratchpad appearance
+scratchpad_width_ratio=0.8
+scratchpad_height_ratio=0.85
+scratchpadcolor=0x516c93ff
+borderpx=4
+
+# Scratchpad keybinding
+bind=F12,toggle_scratchpad
+bind=ALT,grave,toggle_scratchpad  # Alternative: ALT+` (backtick)
+
+# Window state toggles (useful with scratchpad)
+bind=SUPER,g,toggleglobal,
+bind=SUPER,o,toggleoverlay,
+```
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Scratchpad window too large">
+    Reduce `scratchpad_width_ratio` and `scratchpad_height_ratio` values. Try 0.7 and 0.8 for a more modest size.
+  </Accordion>
+  
+  <Accordion title="Can't find scratchpad windows">
+    Press the toggle binding to show all hidden scratchpad windows. They should appear centered on your current monitor.
+  </Accordion>
+  
+  <Accordion title="Scratchpad appears on wrong monitor">
+    Focus the desired monitor first, then toggle scratchpad. Scratchpad windows appear on the currently focused monitor.
+  </Accordion>
+  
+  <Accordion title="Border color not changing">
+    Reload configuration with `SUPER+r` after modifying `scratchpadcolor` in config.conf.
+  </Accordion>
+</AccordionGroup>
+
+## Related Features
+
+- [Window States](/concepts/window-states) - Global, overlay, and other window modes
+- [Animations](/concepts/animations) - Scratchpad show/hide animations
+- [Keybindings](/configuration/keybindings) - Configure scratchpad shortcuts
+- [Window Commands](/reference/window-commands) - Window manipulation commands

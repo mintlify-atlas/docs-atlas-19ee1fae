@@ -1,0 +1,342 @@
+---
+title: Keybindings
+description: Configure keyboard shortcuts, mouse bindings, and scroll wheel actions in Mango
+---
+
+## Keybinding Syntax
+
+Mango supports three types of bindings:
+
+### Keyboard Bindings
+
+```conf
+bind=MODIFIER,key,action,parameters
+```
+
+<ParamField path="MODIFIER" type="string" required>
+  Modifier key(s). Available modifiers: `SUPER`, `CTRL`, `ALT`, `SHIFT`, `NONE`
+  
+  Combine multiple modifiers with `+`: `SUPER+SHIFT`, `ALT+CTRL`
+</ParamField>
+
+<ParamField path="key" type="string" required>
+  Key name. Use `xev` or `wev` commands to find key names.
+  
+  Examples: `r`, `Return`, `space`, `Left`, `Right`, `Up`, `Down`, `Tab`
+</ParamField>
+
+<ParamField path="action" type="string" required>
+  The action to perform when the key combination is pressed
+</ParamField>
+
+<ParamField path="parameters" type="string">
+  Optional parameters for the action
+</ParamField>
+
+### Mouse Bindings
+
+```conf
+mousebind=MODIFIER,button,action,parameters
+```
+
+<ParamField path="button" type="string" required>
+  Mouse button: `btn_left`, `btn_middle`, `btn_right`
+  
+  <Note>`btn_left` and `btn_right` cannot bind with `NONE` modifier</Note>
+</ParamField>
+
+### Scroll Wheel Bindings
+
+```conf
+axisbind=MODIFIER,direction,action
+```
+
+<ParamField path="direction" type="string" required>
+  Scroll direction: `UP` or `DOWN`
+</ParamField>
+
+## System Actions
+
+### Reload Configuration
+
+```conf
+bind=SUPER,r,reload_config
+```
+
+### Quit Compositor
+
+```conf
+bind=SUPER,m,quit
+```
+
+### Kill Window
+
+```conf
+bind=ALT,q,killclient,
+```
+
+## Launching Applications
+
+Use the `spawn` action to launch applications:
+
+```conf
+# Launch application menu
+bind=Alt,space,spawn,rofi -show drun
+
+# Launch terminal
+bind=Alt,Return,spawn,foot
+```
+
+## Window Focus
+
+### Focus Stack Navigation
+
+```conf
+# Focus next window in stack
+bind=SUPER,Tab,focusstack,next
+```
+
+### Directional Focus
+
+```conf
+# Focus window in direction
+bind=ALT,Left,focusdir,left
+bind=ALT,Right,focusdir,right
+bind=ALT,Up,focusdir,up
+bind=ALT,Down,focusdir,down
+```
+
+## Window Management
+
+### Swap Windows
+
+```conf
+bind=SUPER+SHIFT,Up,exchange_client,up
+bind=SUPER+SHIFT,Down,exchange_client,down
+bind=SUPER+SHIFT,Left,exchange_client,left
+bind=SUPER+SHIFT,Right,exchange_client,right
+```
+
+### Window States
+
+```conf
+# Toggle floating
+bind=ALT,backslash,togglefloating,
+
+# Toggle fullscreen
+bind=ALT,f,togglefullscreen,
+
+# Toggle fake fullscreen
+bind=ALT+SHIFT,f,togglefakefullscreen,
+
+# Toggle maximize screen
+bind=ALT,a,togglemaximizescreen,
+
+# Toggle global (visible on all tags)
+bind=SUPER,g,toggleglobal,
+
+# Toggle overlay
+bind=SUPER,o,toggleoverlay,
+```
+
+### Overview and Scratchpad
+
+```conf
+# Toggle overview
+bind=ALT,Tab,toggleoverview,
+
+# Toggle scratchpad
+bind=ALT,z,toggle_scratchpad
+
+# Minimize window
+bind=SUPER,i,minimized,
+
+# Restore minimized window
+bind=SUPER+SHIFT,I,restore_minimized
+```
+
+## Layout Management
+
+### Switch Layouts
+
+```conf
+bind=SUPER,n,switch_layout
+```
+
+### Scroller Layout Controls
+
+```conf
+# Set proportion to 1.0
+bind=ALT,e,set_proportion,1.0
+
+# Switch between preset proportions
+bind=ALT,x,switch_proportion_preset,
+```
+
+## Tag (Workspace) Navigation
+
+### Sequential Navigation
+
+```conf
+# View adjacent tag
+bind=SUPER,Left,viewtoleft,0
+bind=SUPER,Right,viewtoright,0
+
+# View adjacent tag with clients
+bind=CTRL,Left,viewtoleft_have_client,0
+bind=CTRL,Right,viewtoright_have_client,0
+
+# Move tag left/right
+bind=CTRL+SUPER,Left,tagtoleft,0
+bind=CTRL+SUPER,Right,tagtoright,0
+```
+
+### Direct Tag Access
+
+```conf
+# View specific tag
+bind=Ctrl,1,view,1,0
+bind=Ctrl,2,view,2,0
+bind=Ctrl,3,view,3,0
+bind=Ctrl,4,view,4,0
+bind=Ctrl,5,view,5,0
+bind=Ctrl,6,view,6,0
+bind=Ctrl,7,view,7,0
+bind=Ctrl,8,view,8,0
+bind=Ctrl,9,view,9,0
+```
+
+### Move Window to Tag
+
+```conf
+# Move window to tag and focus it
+bind=Alt,1,tag,1,0
+bind=Alt,2,tag,2,0
+bind=Alt,3,tag,3,0
+bind=Alt,4,tag,4,0
+bind=Alt,5,tag,5,0
+bind=Alt,6,tag,6,0
+bind=Alt,7,tag,7,0
+bind=Alt,8,tag,8,0
+bind=Alt,9,tag,9,0
+
+# Move window to tag silently (without focusing)
+# bind=Alt,1,tagsilent,1
+```
+
+## Monitor Management
+
+```conf
+# Focus monitor
+bind=alt+shift,Left,focusmon,left
+bind=alt+shift,Right,focusmon,right
+
+# Move window to monitor
+bind=SUPER+Alt,Left,tagmon,left
+bind=SUPER+Alt,Right,tagmon,right
+```
+
+## Gaps Control
+
+```conf
+# Increase gaps
+bind=ALT+SHIFT,X,incgaps,1
+
+# Decrease gaps
+bind=ALT+SHIFT,Z,incgaps,-1
+
+# Toggle gaps
+bind=ALT+SHIFT,R,togglegaps
+```
+
+## Window Movement
+
+Move windows by pixel increments:
+
+```conf
+bind=CTRL+SHIFT,Up,movewin,+0,-50
+bind=CTRL+SHIFT,Down,movewin,+0,+50
+bind=CTRL+SHIFT,Left,movewin,-50,+0
+bind=CTRL+SHIFT,Right,movewin,+50,+0
+```
+
+## Window Resizing
+
+Resize windows by pixel increments:
+
+```conf
+bind=CTRL+ALT,Up,resizewin,+0,-50
+bind=CTRL+ALT,Down,resizewin,+0,+50
+bind=CTRL+ALT,Left,resizewin,-50,+0
+bind=CTRL+ALT,Right,resizewin,+50,+0
+```
+
+## Mouse Bindings
+
+```conf
+# Move window with mouse
+mousebind=SUPER,btn_left,moveresize,curmove
+
+# Maximize screen with middle click
+mousebind=NONE,btn_middle,togglemaximizescreen,0
+
+# Resize window with mouse
+mousebind=SUPER,btn_right,moveresize,curresize
+```
+
+<Note>
+`btn_left` and `btn_right` cannot be bound with `NONE` modifier key.
+</Note>
+
+## Scroll Wheel Bindings
+
+```conf
+# Navigate tags with scroll wheel
+axisbind=SUPER,UP,viewtoleft_have_client
+axisbind=SUPER,DOWN,viewtoright_have_client
+```
+
+### Scroll Wheel Timeout
+
+Control the timeout for axis bindings:
+
+```conf
+axis_bind_apply_timeout=100
+```
+
+<ParamField path="axis_bind_apply_timeout" type="integer" default="100">
+  Timeout in milliseconds before axis binding action is applied
+</ParamField>
+
+## Finding Key Names
+
+To find the correct key name for your keybinding:
+
+### Using `wev` (Wayland)
+
+```bash
+wev
+```
+
+Press the desired key and look for the key name in the output.
+
+### Using `xev` (X11)
+
+```bash
+xev
+```
+
+Press the desired key and look for the keysym name in the output.
+
+## Available Modifiers
+
+- `SUPER` - Super/Windows/Command key
+- `CTRL` - Control key
+- `ALT` - Alt key
+- `SHIFT` - Shift key
+- `NONE` - No modifier
+
+Combine modifiers with `+`:
+- `SUPER+SHIFT`
+- `CTRL+ALT`
+- `ALT+SHIFT`
