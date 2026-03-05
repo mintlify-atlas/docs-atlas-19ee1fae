@@ -97,6 +97,7 @@
             "group": "Command Reference",
             "pages": [
               "reference/keybindings",
+              "reference/system-commands",
               "reference/window-commands",
               "reference/layout-commands",
               "reference/tag-commands"

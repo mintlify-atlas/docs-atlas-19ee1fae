@@ -1,0 +1,374 @@
+---
+title: System Commands
+description: Core system commands for controlling Mango compositor
+---
+
+This page documents system-level commands that control Mango's operation, input devices, displays, and keyboard layouts.
+
+## Core System Commands
+
+### quit
+
+Exits the Mango compositor.
+
+<ParamField path="action" type="quit">
+  Quits Mango and ends the Wayland session
+</ParamField>
+
+**Example:**
+```conf
+bind=SUPER,m,quit
+```
+
+<Warning>
+This will close all running applications. Save your work before using this command.
+</Warning>
+
+### reload_config
+
+Reloads the configuration file without restarting Mango.
+
+<ParamField path="action" type="reload_config">
+  Hot-reloads `~/.config/mango/config.conf` applying changes immediately
+</ParamField>
+
+**Example:**
+```conf
+bind=SUPER,r,reload_config
+```
+
+**What gets reloaded:**
+- Keybindings
+- Colors and appearance
+- Animation settings
+- Window effects
+- Rules and options
+
+**What requires restart:**
+- Input device settings (trackpad, keyboard layout)
+- Monitor configuration changes
+- IPC-related settings
+
+### spawn
+
+Launches an external program or command.
+
+<ParamField path="action" type="spawn">
+  Spawns a new process with the specified command
+</ParamField>
+
+<ParamField path="command" type="string" required>
+  The command to execute (can include arguments)
+</ParamField>
+
+**Examples:**
+```conf
+# Launch applications
+bind=Alt,Return,spawn,foot
+bind=Alt,space,spawn,rofi -show drun
+bind=SUPER,b,spawn,firefox
+bind=SUPER,f,spawn,thunar
+
+# Run commands with arguments
+bind=SUPER,s,spawn,grim -g "$(slurp)" ~/screenshot.png
+```
+
+### spawn_shell
+
+Spawns a command through a shell, allowing shell features like pipes and redirects.
+
+<ParamField path="action" type="spawn_shell">
+  Executes command through `/bin/sh -c`
+</ParamField>
+
+<ParamField path="script" type="string" required>
+  Shell command or script to execute
+</ParamField>
+
+**Examples:**
+```conf
+# Run shell script
+bind=SUPER+SHIFT,s,spawn_shell,/path/to/your/script.sh
+
+# Use shell features
+bind=SUPER+SHIFT,l,spawn_shell,~/.config/mango/lock-screen.sh
+
+# Pipe commands together
+bind=SUPER,p,spawn_shell,ps aux | grep mango | rofi -dmenu
+```
+
+### spawn_on_empty
+
+Spawns a command only if the current tag has no windows.
+
+<ParamField path="action" type="spawn_on_empty">
+  Conditionally spawns if tag is empty
+</ParamField>
+
+<ParamField path="command" type="string" required>
+  Command to execute when tag is empty
+</ParamField>
+
+**Example:**
+```conf
+# Auto-launch terminal on empty tag
+bind=SUPER,Return,spawn_on_empty,foot
+```
+
+**Use case:** Prevent spawning multiple instances when switching to a tag.
+
+### killclient
+
+Closes the currently focused window.
+
+<ParamField path="action" type="killclient">
+  Sends close request to focused window
+</ParamField>
+
+**Example:**
+```conf
+bind=ALT,q,killclient
+bind=SUPER,c,killclient
+```
+
+<Note>
+This sends a graceful close request. Applications can prompt to save before closing.
+</Note>
+
+## Input Device Commands
+
+### toggle_trackpad_enable
+
+Toggles the trackpad on/off at runtime.
+
+<ParamField path="action" type="toggle_trackpad_enable">
+  Enables or disables the trackpad device
+</ParamField>
+
+**Example:**
+```conf
+bind=SUPER,t,toggle_trackpad_enable
+```
+
+**Use case:** Disable trackpad when using external mouse, or while typing.
+
+### switch_keyboard_layout
+
+Cycles through configured keyboard layouts.
+
+<ParamField path="action" type="switch_keyboard_layout">
+  Switches to next keyboard layout in XKB configuration
+</ParamField>
+
+**Example:**
+```conf
+bind=SUPER,space,switch_keyboard_layout
+```
+
+**Configuration:**
+```conf
+# Set available layouts
+xkb_rules_layout=us,de,fr
+```
+
+The command will cycle: us → de → fr → us
+
+### setkeymode
+
+Sets a specific keyboard mode or layout by index.
+
+<ParamField path="action" type="setkeymode">
+  Directly sets keyboard layout by index (0-based)
+</ParamField>
+
+<ParamField path="mode" type="integer" required>
+  Layout index from xkb_rules_layout
+</ParamField>
+
+**Example:**
+```conf
+# Direct layout selection
+bind=SUPER,1,setkeymode,0  # First layout
+bind=SUPER,2,setkeymode,1  # Second layout
+bind=SUPER,3,setkeymode,2  # Third layout
+```
+
+## Display Commands
+
+### disable_monitor
+
+Disables a specific monitor output.
+
+<ParamField path="action" type="disable_monitor">
+  Turns off the specified monitor
+</ParamField>
+
+<ParamField path="output" type="string" required>
+  Monitor name (e.g., "eDP-1", "HDMI-A-1")
+</ParamField>
+
+**Example:**
+```conf
+bind=SUPER+SHIFT,d,disable_monitor,eDP-1
+```
+
+**Finding monitor names:**
+```bash
+wlr-randr
+```
+
+### enable_monitor
+
+Enables a previously disabled monitor.
+
+<ParamField path="action" type="enable_monitor">
+  Turns on the specified monitor
+</ParamField>
+
+<ParamField path="output" type="string" required>
+  Monitor name to enable
+</ParamField>
+
+**Example:**
+```conf
+bind=SUPER+SHIFT,e,enable_monitor,HDMI-A-1
+```
+
+### toggle_monitor
+
+Toggles a monitor on/off.
+
+<ParamField path="action" type="toggle_monitor">
+  Toggles monitor between enabled and disabled states
+</ParamField>
+
+<ParamField path="output" type="string" required>
+  Monitor name to toggle
+</ParamField>
+
+**Example:**
+```conf
+bind=SUPER+SHIFT,m,toggle_monitor,HDMI-A-1
+```
+
+**Use case:** Quickly disable laptop screen when docking.
+
+### create_virtual_output
+
+Creates a virtual display output for testing or screencasting.
+
+<ParamField path="action" type="create_virtual_output">
+  Creates a headless virtual display
+</ParamField>
+
+**Example:**
+```conf
+bind=SUPER+SHIFT,v,create_virtual_output
+```
+
+**Use cases:**
+- Testing multi-monitor layouts without physical displays
+- Creating virtual displays for screen recording
+- Development and debugging
+
+### destroy_all_virtual_output
+
+Removes all virtual display outputs.
+
+<ParamField path="action" type="destroy_all_virtual_output">
+  Destroys all virtual outputs created with create_virtual_output
+</ParamField>
+
+**Example:**
+```conf
+bind=SUPER+SHIFT+ALT,v,destroy_all_virtual_output
+```
+
+## Advanced Commands
+
+### chvt
+
+Switches to a different virtual terminal (TTY).
+
+<ParamField path="action" type="chvt">
+  Changes to specified virtual terminal
+</ParamField>
+
+<ParamField path="vt" type="integer" required>
+  Virtual terminal number (1-12)
+</ParamField>
+
+**Example:**
+```conf
+bind=CTRL+ALT,F1,chvt,1
+bind=CTRL+ALT,F2,chvt,2
+```
+
+<Warning>
+Switching away from Mango's TTY will suspend the Wayland session. Use carefully.
+</Warning>
+
+### setoption
+
+Sets a configuration option at runtime.
+
+<ParamField path="action" type="setoption">
+  Dynamically changes a config option without reloading
+</ParamField>
+
+<ParamField path="option" type="string" required>
+  Configuration option name
+</ParamField>
+
+<ParamField path="value" type="string" required>
+  New value for the option
+</ParamField>
+
+**Examples:**
+```conf
+# Toggle effects on the fly
+bind=SUPER+SHIFT,b,setoption,blur,1
+bind=SUPER+SHIFT+ALT,b,setoption,blur,0
+
+# Adjust gaps dynamically
+bind=SUPER,equal,setoption,gappih,10
+bind=SUPER,minus,setoption,gappih,0
+```
+
+**Supported options:**
+- Most appearance options (blur, shadows, gaps, borders)
+- Window behavior options
+- Animation settings
+
+<Note>
+Some options like input device settings require a restart and won't work with `setoption`.
+</Note>
+
+### bind_to_view
+
+Binds the focused window to a specific tag permanently.
+
+<ParamField path="action" type="bind_to_view">
+  Pins window to specific tag across all monitors
+</ParamField>
+
+<ParamField path="tag" type="integer" required>
+  Tag ID to bind to (1-9)
+</ParamField>
+
+**Example:**
+```conf
+bind=SUPER+SHIFT,1,bind_to_view,1
+bind=SUPER+SHIFT,2,bind_to_view,2
+```
+
+**Difference from `tag`:**
+- `tag`: Moves window to tag (can be moved again)
+- `bind_to_view`: Permanently binds to tag (sticky)
+
+## See Also
+
+- [Keybindings Reference](/reference/keybindings) - Complete keybinding syntax
+- [Window Commands](/reference/window-commands) - Window manipulation
+- [Configuration Overview](/configuration/overview) - Config file structure
+- [Input Devices](/configuration/input-devices) - Input device configuration
